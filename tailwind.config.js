@@ -12,5 +12,9 @@ module.exports = {
       },
     },
   },
+  darkMode: "class", // Ensure "class" mode is enabled
+  theme: {
+    extend: {},
+  },
   plugins: [],
 };
