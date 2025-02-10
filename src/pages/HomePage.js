@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { FiMenu, FiX, FiFileText, FiClock, FiUser, FiChevronLeft, FiSun, FiMoon } from "react-icons/fi";
 import TransactionHistory from "./components/TransactionHistory";
+import { auth } from "../firebase";
 
 const HomePage = () => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedPage, setSelectedPage] = useState("transactions");
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
+  const [accountName, setAccountName] = useState("");
 
   useEffect(() => {
     if (darkMode) {
@@ -16,6 +18,17 @@ const HomePage = () => {
       localStorage.setItem("theme", "light");
     }
   }, [darkMode]);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setAccountName(user.displayName || user.email);
+      } else {
+        setAccountName("Guest");
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const renderContent = () => {
     switch (selectedPage) {
@@ -37,7 +50,7 @@ const HomePage = () => {
         }`}
       >
         <div>
-          <div className="flex justify-between items-center p-3">
+          <div className="flex justify-between items-center p-3 pb-6"> 
             {isExpanded && <h2 className="text-xl font-medium text-gray-700 dark:text-gray-200">Menu</h2>}
             <button onClick={() => setIsExpanded(!isExpanded)}>
               {isExpanded ? <FiChevronLeft className="text-3xl text-gray-700 dark:text-gray-200" /> : <FiMenu className="text-2xl text-gray-700 dark:text-gray-200" />}
@@ -64,14 +77,15 @@ const HomePage = () => {
             </button>
           </nav>
         </div>
-        <div className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-700 rounded-lg">
-          {isExpanded && <span className="text-lg font-semibold dark:text-gray-300">John Doe</span>}
-          <FiUser className="text-xl dark:text-gray-300" />
+        <div className="flex flex-col space-y-3">
+          <div className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-700 rounded-lg">
+            {isExpanded && <span className="text-lg font-semibold dark:text-gray-300">{accountName}</span>}
+            <FiUser className="text-xl dark:text-gray-300" />
+          </div>
+          <button className="p-4 bg-gray-300 dark:bg-gray-700 rounded-lg shadow-md" onClick={() => setDarkMode(!darkMode)}>
+            {darkMode ? <FiSun className="text-yellow-400" /> : <FiMoon className="text-gray-700 dark:text-gray-300" />}
+          </button>
         </div>
-        <button className="p-4 bg-gray-300 dark:bg-gray-700 rounded-lg shadow-md" onClick={() => setDarkMode(!darkMode)}>
-          {darkMode ? <FiSun className="text-yellow-400" /> : <FiMoon className="text-gray-700 dark:text-gray-300" />}
-          
-        </button>
       </div>
 
       {/* Scrollable Content */}
