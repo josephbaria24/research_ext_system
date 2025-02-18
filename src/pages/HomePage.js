@@ -64,7 +64,7 @@ const HomePage = () => {
               onClick={() => setSelectedPage("transactions")}
             >
               <FiClock className="text-xl" />
-              {isExpanded && <span className="text-lg font-semibold">Transaction History</span>}
+              {isExpanded && <span className="text-m font-medium">Transaction History</span>}
             </button>
             <button
               className={`flex items-center space-x-2 p-4 w-full rounded-lg shadow transition duration-300 ${
@@ -73,16 +73,17 @@ const HomePage = () => {
               onClick={() => setSelectedPage("documents")}
             >
               <FiFileText className="text-xl" />
-              {isExpanded && <span className="text-lg font-semibold">Documents</span>}
+              {isExpanded && <span className="text-m font-medium">Documents</span>}
             </button>
           </nav>
         </div>
         <div className="flex flex-col space-y-3">
           <div className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-700 rounded-lg">
-            {isExpanded && <span className="text-lg font-semibold dark:text-gray-300">{accountName}</span>}
+            {isExpanded && <span className="text-m font-medium dark:text-gray-300">{accountName}</span>}
             <FiUser className="text-xl dark:text-gray-300" />
           </div>
-          <button className="p-4 bg-gray-300 dark:bg-gray-700 rounded-lg shadow-md" onClick={() => setDarkMode(!darkMode)}>
+          <button className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-700 rounded-lg" onClick={() => setDarkMode(!darkMode)}>
+            {isExpanded && <span className="text-m font-medium dark:text-gray-300">Theme</span>}
             {darkMode ? <FiSun className="text-yellow-400" /> : <FiMoon className="text-gray-700 dark:text-gray-300" />}
           </button>
         </div>

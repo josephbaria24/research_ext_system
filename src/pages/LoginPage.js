@@ -121,13 +121,13 @@ const LoginPage = () => {
         {/* 🔹 Toggle between Login & Sign Up */}
         <div className="text-center mt-4">
           <p className="text-gray-700">
-            {isSignUp ? "Already have an account?" : "Don't have an account?"}
+            {isSignUp ? "Already have an account?" : ""}
           </p>
           <button
             onClick={() => setIsSignUp(!isSignUp)}
             className="text-orange-500 hover:text-orange-600 font-semibold transition"
           >
-            {isSignUp ? "Log In" : "Sign Up"}
+            {isSignUp ? "Log In" : ""}
           </button>
         </div>
       </div>

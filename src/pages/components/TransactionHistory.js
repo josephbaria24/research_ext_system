@@ -1,5 +1,9 @@
+
 import React, { useState, useEffect } from "react";
 import { db } from "../../firebase";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 import {
   collection,
   getDocs,
@@ -8,10 +12,13 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
-import { FiTrash, FiPlus, FiEdit } from "react-icons/fi";
+import { FiTrash, FiPlus, FiEdit,FiSave  } from "react-icons/fi";
 
 const TransactionHistory = ({ darkMode }) => {
   const [transactions, setTransactions] = useState([]);
+  const [editId, setEditId] = useState(null);
+  const [editableTransaction, setEditableTransaction] = useState({});
+  const [startDate, setStartDate] = useState(new Date());
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("date");
@@ -22,20 +29,49 @@ const TransactionHistory = ({ darkMode }) => {
     items: "",
     from: "",
     to: "",
+    controlNumber: "",
   });
-  const [editId, setEditId] = useState(null); // Track editing transaction ID
 
   const transactionsCollectionRef = collection(db, "transactions");
 
   const fetchTransactions = async () => {
     const data = await getDocs(transactionsCollectionRef);
-    setTransactions(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    // Sort the transactions by date in descending order
+    const sortedTransactions = data.docs
+      .map((doc) => ({ ...doc.data(), id: doc.id }))
+      .sort((a, b) => new Date(b.date) - new Date(a.date));  // Sorting by date in descending order
+    setTransactions(sortedTransactions);
   };
+  
 
   useEffect(() => {
     fetchTransactions();
   }, []);
 
+
+
+  const handleDoubleClick = (transaction) => {
+    setEditId(transaction.id);
+    setEditableTransaction(transaction); // Set current row data in state
+  };
+
+  const handleChange = (e, field) => {
+    setEditableTransaction((prev) => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const saveTransaction = async () => {
+    if (!editId) return;
+  
+    const transactionRef = doc(db, "transactions", editId);
+    
+    await updateDoc(transactionRef, {
+      ...editableTransaction,
+      items: typeof editableTransaction.items === "string" ? editableTransaction.items.split(",") : editableTransaction.items, 
+    });
+  
+    setEditId(null);
+    fetchTransactions();
+  };
 
   const predefinedFromOptions = [
     "VPEC",
@@ -58,21 +94,28 @@ const TransactionHistory = ({ darkMode }) => {
 
   const addTransaction = async () => {
     if (!newTransaction.date || !newTransaction.time || !newTransaction.items || !newTransaction.from || !newTransaction.to) {
-      alert("Please fill all fields!");
+      toast.error("Please fill all fields!"); // Failure toast
       return;
     }
-
-    await addDoc(transactionsCollectionRef, {
-      date: newTransaction.date,
-      time: newTransaction.time,
-      items: newTransaction.items.split(","),
-      from: newTransaction.from,
-      to: newTransaction.to,
-    });
-
-    setNewTransaction({ date: "", time: "", items: "", from: "", to: "" });
-    fetchTransactions();
+  
+    try {
+      await addDoc(transactionsCollectionRef, {
+        date: newTransaction.date,
+        time: newTransaction.time,
+        items: newTransaction.items.split(","),
+        from: newTransaction.from,
+        to: newTransaction.to,
+        controlNumber: newTransaction.controlNumber,
+      });
+  
+      setNewTransaction({ date: "", time: "", items: "", from: "", to: "" });
+      fetchTransactions();
+      toast.success("Transaction added successfully!"); // Success toast
+    } catch (error) {
+      toast.error("Error adding transaction! Please try again."); // Error toast
+    }
   };
+  
 
   const updateTransaction = async () => {
     if (!editId) return;
@@ -84,6 +127,7 @@ const TransactionHistory = ({ darkMode }) => {
       items: newTransaction.items.split(","),
       from: newTransaction.from,
       to: newTransaction.to,
+      controlNumber: newTransaction.controlNumber,
     });
 
     setNewTransaction({ date: "", time: "", items: "", from: "", to: "" });
@@ -94,17 +138,6 @@ const TransactionHistory = ({ darkMode }) => {
   const deleteTransaction = async (id) => {
     await deleteDoc(doc(db, "transactions", id));
     fetchTransactions();
-  };
-
-  const startEdit = (transaction) => {
-    setNewTransaction({
-      date: transaction.date,
-      time: transaction.time,
-      items: transaction.items.join(", "),
-      from: transaction.from,
-      to: transaction.to,
-    });
-    setEditId(transaction.id);
   };
 
   const cancelEdit = () => {
@@ -139,14 +172,46 @@ const TransactionHistory = ({ darkMode }) => {
     const order = sortBy === key && sortOrder === "asc" ? "desc" : "asc";
     setSortBy(key);
     setSortOrder(order);
+  
     const sorted = [...filteredTransactions].sort((a, b) => {
-      return order === "asc"
-        ? a[key].toString().localeCompare(b[key].toString())
-        : b[key].toString().localeCompare(a[key].toString());
+      if (key === "time") {
+        const dateA = new Date(`1970-01-01T${a[key]}`);
+        const dateB = new Date(`1970-01-01T${b[key]}`);
+        return order === "asc" ? dateA - dateB : dateB - dateA;
+      } else {
+        return order === "asc"
+          ? a[key].toString().localeCompare(b[key].toString())
+          : b[key].toString().localeCompare(a[key].toString());
+      }
     });
+  
     setFilteredTransactions(sorted);
   };
 
+
+  const formatTimeTo12Hour = (time) => {
+    if (!time) return "";
+    const [hours, minutes] = time.split(":").map(Number);
+    const period = hours >= 12 ? "PM" : "AM";
+    const formattedHours = hours % 12 || 12; // Convert 0-23 to 12-hour format
+    return `${formattedHours}:${minutes.toString().padStart(2, "0")} ${period}`;
+  };
+  
+
+
+
+  const handleTodayClick = () => {
+    const today = new Date();
+    const currentDate = today.toISOString().split("T")[0]; // Extracts the date in 'yyyy-mm-dd' format
+    const currentTime = today.toTimeString().split(" ")[0]; // Extracts the time in 'hh:mm:ss' format
+    setNewTransaction({
+      ...newTransaction,
+      date: currentDate,
+      time: currentTime.slice(0, 5), // Only take hours and minutes
+    });
+  };
+
+  
   return (
     <div className={`w-full p-6 min-h-screen rounded transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-200" : "bg-gray-100 text-black"}`}>
       <h2 className="text-3xl font-bold mb-4 text-center">Transaction History</h2>
@@ -155,8 +220,38 @@ const TransactionHistory = ({ darkMode }) => {
       <div className={`p-4 rounded-lg shadow-md mb-6 transition-colors duration-300 ${darkMode ? "bg-gray-800 text-gray-300" : "bg-white"}`}>
         <h3 className="text-xl font-semibold mb-2">{editId ? "Edit Transaction" : "Add Transaction"}</h3>
         <div className="grid grid-cols-2 gap-4">
-          <input type="date" className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`} value={newTransaction.date} onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })} onKeyDown={handleKeyDown} />
-          <input type="time" className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`} value={newTransaction.time} onChange={(e) => setNewTransaction({ ...newTransaction, time: e.target.value })} onKeyDown={handleKeyDown} />
+        <div className="flex items-center space-x-4">
+      {/* Date Input */}
+      <div className="relative">
+        <input
+          type="date"
+          className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`}
+          value={newTransaction.date}
+          onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
+          onKeyDown={handleKeyDown}
+        />
+      </div>
+
+      {/* Time Input */}
+      <div className="relative">
+        <input
+          type="time"
+          className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`}
+          value={newTransaction.time}
+          onChange={(e) => setNewTransaction({ ...newTransaction, time: e.target.value })}
+          onKeyDown={handleKeyDown}
+        />
+      </div>
+
+      {/* Today Button */}
+      <button
+        type="button"
+        onClick={handleTodayClick}
+        className={`px-4 py-2 rounded ${darkMode ? "bg-gray-600 text-white" : "bg-blue-500 text-white"}`}
+      >
+        Today
+      </button>
+    </div>
           <input type="text" className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`} placeholder="Items (comma separated)" value={newTransaction.items} onChange={(e) => setNewTransaction({ ...newTransaction, items: e.target.value })} onKeyDown={handleKeyDown} />
           <div className="flex space-x-2">
             {['Voucher', 'Payroll', 'Letter'].map((item) => (
@@ -165,6 +260,14 @@ const TransactionHistory = ({ darkMode }) => {
               </button>
             ))}
           </div>
+          <input
+            type="text"
+            className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`}
+            placeholder="Control Number"
+            value={newTransaction.controlNumber}
+            onChange={(e) => setNewTransaction({ ...newTransaction, controlNumber: e.target.value })}
+            onKeyDown={handleKeyDown}
+          />
           
            <div className="relative">
             <input 
@@ -199,21 +302,13 @@ const TransactionHistory = ({ darkMode }) => {
           </div>
         </div>
         <div className="mt-4 flex space-x-2">
-          {editId ? (
-            <>
-              <button className="bg-green-500 text-white px-4 py-2 rounded flex items-center" onClick={updateTransaction}>
-                <FiPlus className="mr-2" /> Update Transaction
-              </button>
-              <button className="bg-gray-500 text-white px-4 py-2 rounded flex items-center" onClick={cancelEdit}>
-                Cancel Edit
-              </button>
-            </>
-          ) : (
+          {(
             <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center" onClick={addTransaction}>
               <FiPlus className="mr-2" /> Add Transaction
             </button>
           )}
         </div>
+        
       </div>
 
         {/* Search and Sort Controls */}
@@ -230,7 +325,7 @@ const TransactionHistory = ({ darkMode }) => {
       
 
       {/* Transactions List */}
-      <div className={`p-4 rounded-lg shadow-md transition-colors duration-300 ${darkMode ? "bg-gray-800 text-gray-300" : "bg-white"}`}>
+      <div className={`p-4 rounded-lg shadow-md transition-colors duration-300 overflow-y-auto ${darkMode ? "bg-gray-800 text-gray-300" : "bg-white"}`}>
         <h3 className="text-xl font-semibold mb-2">Transaction List</h3>
         <table className="w-full border-collapse">
           <thead>
@@ -240,26 +335,73 @@ const TransactionHistory = ({ darkMode }) => {
               <th className="p-2 border">Items</th>
               <th className="p-2 border">From</th>
               <th className="p-2 border">To</th>
+              <th className="p-2 border">Control Number</th>
               <th className="p-2 border">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredTransactions.map((transaction) => (
-              <tr key={transaction.id} className="border-t">
-                <td className="p-2 border text-center">{transaction.date}</td>
-                <td className="p-2 border text-center">{transaction.time}</td>
-                <td className="p-2 border text-center">{transaction.items.join(", ")}</td>
-                <td className="p-2 border text-center">{transaction.from}</td>
-                <td className="p-2 border text-center">{transaction.to}</td>
-                <td className="p-2 border text-center flex justify-center space-x-2">
-                  <button className="bg-yellow-500 text-white px-3 py-1 rounded"><FiEdit /></button>
-                  <button className="bg-red-500 text-white px-3 py-1 rounded"><FiTrash /></button>
-                </td>
-              </tr>
+              <tr key={transaction.id} className="border-t" onDoubleClick={() => handleDoubleClick(transaction)}>
+              <td className="p-2 border text-center">
+                {editId === transaction.id ? (
+                  <input type="date" value={editableTransaction.date} onChange={(e) => handleChange(e, "date")} className="border p-1 rounded" />
+                ) : (
+                  transaction.date
+                )}
+              </td>
+              <td className="p-2 border text-center">
+                {editId === transaction.id ? (
+                  <input type="time" value={editableTransaction.time} onChange={(e) => handleChange(e, "time")} className="border p-1 rounded" />
+                ) : (
+                  formatTimeTo12Hour(transaction.time)
+                )}
+              </td>
+              <td className="p-2 border text-center">
+                {editId === transaction.id ? (
+                  <input type="text" value={editableTransaction.items} onChange={(e) => handleChange(e, "items")} className="border p-1 rounded" />
+                ) : (
+                  transaction.items.join(", ")
+                )}
+              </td>
+              <td className="p-2 border text-center">
+                {editId === transaction.id ? (
+                  <input type="text" value={editableTransaction.from} onChange={(e) => handleChange(e, "from")} className="border p-1 rounded" />
+                ) : (
+                  transaction.from
+                )}
+              </td>
+              <td className="p-2 border text-center">
+                {editId === transaction.id ? (
+                  <input type="text" value={editableTransaction.to} onChange={(e) => handleChange(e, "to")} className="border p-1 rounded" />
+                ) : (
+                  transaction.to
+                )}
+              </td>
+              <td className="p-2 border text-center">
+                {editId === transaction.id ? (
+                  <input type="text" value={editableTransaction.controlNumber} onChange={(e) => handleChange(e, "controlNumber")} className="border p-1 rounded" />
+                ) : (
+                  transaction.controlNumber || "N/A"
+                )}
+              </td>
+              <td className="p-2 border text-center flex justify-center space-x-2">
+                {editId === transaction.id ? (
+                  <>
+                    <button onClick={saveTransaction} className="bg-green-500 text-white px-3 py-1 rounded"><FiSave /></button>
+                    <button onClick={cancelEdit} className="bg-gray-500 text-white px-3 py-1 rounded">Cancel Editing</button>
+                  </>
+                ) : null}
+                {/* Delete button shown only when not in edit mode */}
+                {editId !== transaction.id && (
+                  <button onClick={() => deleteTransaction(transaction.id)} className="bg-red-500 text-white px-3 py-1 rounded"><FiTrash /></button>
+                )}
+              </td>
+            </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <ToastContainer />
     </div>
   );
 };

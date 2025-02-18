@@ -12,7 +12,17 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
+@font-face {
+  font-family: 'KyivType';
+  src: url('/fonts/KyivType.woff2') format('woff2'),
+       url('/fonts/KyivType.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
 
+body {
+  font-family: 'KyivType', sans-serif;
+}
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
