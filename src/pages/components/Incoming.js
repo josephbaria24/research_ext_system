@@ -250,7 +250,7 @@ const TransactionHistory = ({ darkMode }) => {
   
   return (
     <div className={`w-full p-1 min-h-screen rounded transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-200" : "bg-gray-100 text-black"}`}>
-      <h2 className="text-3xl font-bold mb-4 text-center">Incoming Transactions</h2>
+      <h2 className="text-3xl font-bold mb-4 text-center">Incoming transactions</h2>
   
       {/* Add/Edit Transaction Form */}
       <div className={`p-4 rounded-lg shadow-md mb-6 transition-colors duration-300 ${darkMode ? "bg-gray-800 text-gray-300" : "bg-white"}`}>
@@ -353,12 +353,10 @@ const TransactionHistory = ({ darkMode }) => {
             </datalist>
           </div>
         </div>
-        <div className="mt-4 flex space-x-2">
-          {(
-            <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center" onClick={addTransaction}>
-              <FiPlus className="mr-2" /> Add Transaction
-            </button>
-          )}
+        <div className="mt-4 flex justify-end">
+          <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center" onClick={addTransaction}>
+            <FiPlus className="mr-2" /> Add Transaction
+          </button>
         </div>
         
       </div>
