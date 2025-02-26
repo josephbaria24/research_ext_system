@@ -97,17 +97,22 @@ const TransactionHistory = ({ darkMode }) => {
     "REGISTRAR"
   ];
 
+  const [loading, setLoading] = useState(false); // Loading state
 
   const addTransaction = async () => {
+    if (loading) return; // Prevent multiple submissions
+    setLoading(true); // Set loading state to true
+  
     const transactionData = {
       ...newTransaction,
-      type: newTransaction.type || type,  // Ensure type is added
-      particulars: newTransaction.particulars || particulars,  // Ensure particulars is added
+      type: newTransaction.type || type, 
+      particulars: newTransaction.particulars || particulars, 
     };
   
     if (!transactionData.date || !transactionData.time ||
         !transactionData.to || !transactionData.controlNumber) {
       toast.error("Please fill all fields!"); 
+      setLoading(false); // Reset loading state
       return;
     }
   
@@ -117,12 +122,13 @@ const TransactionHistory = ({ darkMode }) => {
   
       if (existingControlNumbers.includes(transactionData.controlNumber)) {
         toast.error("Control number already exists! Please use a unique control number.");
+        setLoading(false); // Reset loading state
         return;
       }
   
       await addDoc(transactionsCollectionRef, {
         ...transactionData,
-        items: transactionData.items ? transactionData.items.split(",") : [], // Store items as an array
+        items: transactionData.items ? transactionData.items.split(",") : [], 
       });
   
       setNewTransaction({
@@ -136,8 +142,50 @@ const TransactionHistory = ({ darkMode }) => {
     } catch (error) {
       console.error("Firestore Error:", error);
       toast.error("Error adding transaction! Please try again.");
+    } finally {
+      setLoading(false); // Reset loading state after transaction completes
     }
   };
+  // const addTransaction = async () => {
+  //   const transactionData = {
+  //     ...newTransaction,
+  //     type: newTransaction.type || type,  // Ensure type is added
+  //     particulars: newTransaction.particulars || particulars,  // Ensure particulars is added
+  //   };
+  
+  //   if (!transactionData.date || !transactionData.time ||
+  //       !transactionData.to || !transactionData.controlNumber) {
+  //     toast.error("Please fill all fields!"); 
+  //     return;
+  //   }
+  
+  //   try {
+  //     const data = await getDocs(transactionsCollectionRef);
+  //     const existingControlNumbers = data.docs.map(doc => doc.data().controlNumber);
+  
+  //     if (existingControlNumbers.includes(transactionData.controlNumber)) {
+  //       toast.error("Control number already exists! Please use a unique control number.");
+  //       return;
+  //     }
+  
+  //     await addDoc(transactionsCollectionRef, {
+  //       ...transactionData,
+  //       items: transactionData.items ? transactionData.items.split(",") : [], // Store items as an array
+  //     });
+  
+  //     setNewTransaction({
+  //       date: "", time: "", items: "", to: "", controlNumber: "", transactionType: "Outgoing", type: "", particulars: ""
+  //     });
+  //     setType(""); 
+  //     setParticulars("");
+  
+  //     fetchTransactions();
+  //     toast.success("Transaction added successfully!");
+  //   } catch (error) {
+  //     console.error("Firestore Error:", error);
+  //     toast.error("Error adding transaction! Please try again.");
+  //   }
+  // };
   
   
 
@@ -245,6 +293,11 @@ const TransactionHistory = ({ darkMode }) => {
     });
   };
 
+
+
+
+  
+
   
   return (
     <div className={`w-full p-1 min-h-screen rounded transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-200" : "bg-gray-100 text-black"}`}>
@@ -351,8 +404,24 @@ const TransactionHistory = ({ darkMode }) => {
           </div>
         </div>
         <div className="mt-4 flex justify-end">
-          <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center" onClick={addTransaction}>
-            <FiPlus className="mr-2" /> Add Transaction
+        <button 
+            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center" 
+            onClick={addTransaction}
+            disabled={loading} // Disable when loading
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 11-8 8z"></path>
+                </svg>
+                Adding...
+              </>
+            ) : (
+              <>
+                <FiPlus className="mr-2" /> Add Transaction
+              </>
+            )}
           </button>
         </div>
 
