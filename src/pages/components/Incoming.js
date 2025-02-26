@@ -311,7 +311,7 @@ const TransactionHistory = ({ darkMode }) => {
       </div>
       
 
-      {type === "voucher" || type === "letter" ? (
+      {type === "voucher" || type === "letter" || type === "payroll" ? (
         <div className="mb-2">
           <label className="block text-sm font-medium text-gray-700">Particulars</label>
           <textarea
@@ -381,7 +381,7 @@ const TransactionHistory = ({ darkMode }) => {
               <th className="p-2 border">From</th>
               <th className="p-2 border">Control Number</th>
               <th className="p-2 border">Type</th>
-              {transactions.some(t => t.type === "letter" ) && (
+              {transactions.some(t => t.type === "letter" || t.type === "payroll" || t.type === "voucher") && (
                 <th className="p-2 border">Particulars</th>
               )}
               <th className="p-2 border">Actions</th>
