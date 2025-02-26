@@ -306,7 +306,7 @@ const TransactionHistory = ({ darkMode }) => {
       </div>
       
 
-      {type === "voucher" || type === "letter" ? (
+      {type === "voucher" || type === "letter" || type === "payroll" ? (
         <div className="mb-2">
           <label className="block text-sm font-medium text-gray-700">Particulars</label>
           <textarea

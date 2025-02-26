@@ -372,6 +372,7 @@ const TransactionHistory = ({ darkMode }) => {
       {/* Transactions List */}
       <div className={`p-4 rounded-lg shadow-md transition-colors duration-300 overflow-y-auto ${darkMode ? "bg-gray-800 text-gray-300" : "bg-white"}`}>
         <h3 className="text-xl font-semibold mb-2">Transaction List</h3>
+        
         <table className="w-full border-collapse">
           <thead>
             <tr className={`transition-colors duration-300 ${darkMode ? "bg-gray-700 text-white" : "bg-gray-300"}`}>
@@ -380,14 +381,13 @@ const TransactionHistory = ({ darkMode }) => {
               <th className="p-2 border">From</th>
               <th className="p-2 border">Control Number</th>
               <th className="p-2 border">Type</th>
-              {transactions.some(t => t.type === "letter") && (
+              {transactions.some(t => t.type === "letter" ) && (
                 <th className="p-2 border">Particulars</th>
               )}
               <th className="p-2 border">Actions</th>
             </tr>
           </thead>
-          
-          
+          <div className="max-h-96 overflow-y-auto border rounded"></div>
           <tbody>
             {filteredTransactions.map((transaction) => (
               <tr key={transaction.id} className="border-t" onDoubleClick={() => handleDoubleClick(transaction)}>
@@ -466,6 +466,7 @@ const TransactionHistory = ({ darkMode }) => {
           </tbody>
         </table>
         </div>
+
       <ToastContainer />
     </div>
   );
