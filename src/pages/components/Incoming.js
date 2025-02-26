@@ -85,14 +85,19 @@ const TransactionHistory = ({ darkMode }) => {
   };
 
   const predefinedToOptions = [
-    "VPEC",
+    "ADMISSION",
     "BUDGET",
     "ADMIN",
     "OUP",
     "OVP",
     "ACCOUNTING",
     "RECORDS",
-    "REGISTRAR"
+    "REGISTRAR",
+    "DEL SUR CLUSTER",
+    "DEL NORTE CLUSTER",
+    "OCCIDENTAL CLUSTER",
+    "ORIENTAL CLUSTER",
+    "PCAT - CUYO"
   ];
 
 
