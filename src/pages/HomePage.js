@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { FiMenu, FiX, FiFileText, FiClock, FiUser, FiChevronLeft, FiSun, FiMoon } from "react-icons/fi";
-import TransactionHistory from "./components/TransactionHistory";
+import { FiMenu, FiX, FiFileText, FiClock, FiUser, FiChevronLeft, FiSun, FiMoon, FiPhoneOutgoing, FiArrowDownLeft, FiArrowUpLeft, FiArrowDownRight } from "react-icons/fi";
+import TransactionHistory from "./components/Outgoing";
+import Incoming from "./components/Incoming";
 import { auth } from "../firebase";
 
 const HomePage = () => {
@@ -35,7 +36,7 @@ const HomePage = () => {
       case "transactions":
         return <TransactionHistory darkMode={darkMode} />;
       case "documents":
-        return <Documents />;
+        return <Incoming darkMode={darkMode} />;
       default:
         return <Welcome />;
     }
@@ -63,8 +64,8 @@ const HomePage = () => {
               }`}
               onClick={() => setSelectedPage("transactions")}
             >
-              <FiClock className="text-xl" />
-              {isExpanded && <span className="text-m font-medium">Transaction History</span>}
+              <FiArrowUpLeft className="text-xl" />
+              {isExpanded && <span className="text-m font-medium">Outgoing</span>}
             </button>
             <button
               className={`flex items-center space-x-2 p-4 w-full rounded-lg shadow transition duration-300 ${
@@ -72,8 +73,8 @@ const HomePage = () => {
               }`}
               onClick={() => setSelectedPage("documents")}
             >
-              <FiFileText className="text-xl" />
-              {isExpanded && <span className="text-m font-medium">Documents</span>}
+              <FiArrowDownRight className="text-xl" />
+              {isExpanded && <span className="text-m font-medium">Incoming</span>}
             </button>
           </nav>
         </div>

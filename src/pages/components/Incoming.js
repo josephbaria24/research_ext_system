@@ -11,8 +11,10 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  setDoc
 } from "firebase/firestore";
 import { FiTrash, FiPlus, FiEdit,FiSave  } from "react-icons/fi";
+
 
 const TransactionHistory = ({ darkMode }) => {
   const [transactions, setTransactions] = useState([]);
@@ -27,21 +29,52 @@ const TransactionHistory = ({ darkMode }) => {
     date: "",
     time: "",
     items: "",
-    from: "",
     to: "",
     controlNumber: "",
+    transactionType: "Outgoing",
+    type: "",  // <-- Added type
+    particulars: "" // <-- Added particulars
   });
+
+
+  useEffect(() => {
+    const autoAddTransaction = async () => {
+      if (!newTransaction.date || !newTransaction.time || !newTransaction.to || !newTransaction.controlNumber) {
+        return; // Don't proceed if required fields are missing
+      }
+  
+      try {
+        const transactionRef = doc(db, "transactions", newTransaction.controlNumber); // Use controlNumber as unique ID
+  
+        await setDoc(transactionRef, {
+          ...newTransaction,
+          items: newTransaction.items ? newTransaction.items.split(",") : [],
+        });
+  
+        console.log("Transaction auto-updated in Firestore");
+      } catch (error) {
+        console.error("Firestore Auto-Update Error:", error);
+      }
+    };
+  
+    autoAddTransaction();
+  }, [newTransaction]);
+  
+  const [type, setType] = useState("");
+  const [particulars, setParticulars] = useState("");
 
   const transactionsCollectionRef = collection(db, "transactions");
 
   const fetchTransactions = async () => {
-    const data = await getDocs(transactionsCollectionRef);
-    // Sort the transactions by date in descending order
-    const sortedTransactions = data.docs
-      .map((doc) => ({ ...doc.data(), id: doc.id }))
-      .sort((a, b) => new Date(b.date) - new Date(a.date));  // Sorting by date in descending order
-    setTransactions(sortedTransactions);
-  };
+  const transactionsRef = collection(db, "incomingTransactions"); // Change collection here
+  const data = await getDocs(transactionsRef);
+  const sortedTransactions = data.docs
+    .map((doc) => ({ ...doc.data(), id: doc.id }))
+    .sort((a, b) => new Date(b.date + " " + b.time) - new Date(a.date + " " + a.time));
+  setTransactions(sortedTransactions);
+};
+
+  
   
 
   useEffect(() => {
@@ -73,48 +106,64 @@ const TransactionHistory = ({ darkMode }) => {
     fetchTransactions();
   };
 
-  const predefinedFromOptions = [
-    "VPEC",
-    "BUDGET",
-    "ADMIN",
-    "PRES. OFFICE",
-    "V.P OFFICE",
-    "ACCOUNTING",
-  ];
-
   const predefinedToOptions = [
     "VPEC",
     "BUDGET",
     "ADMIN",
-    "PRES. OFFICE",
-    "V.P OFFICE",
+    "OUP",
+    "OVP",
     "ACCOUNTING",
+    "RECORDS",
+    "REGISTRAR"
   ];
 
 
   const addTransaction = async () => {
-    if (!newTransaction.date || !newTransaction.time || !newTransaction.items || !newTransaction.from || !newTransaction.to) {
-      toast.error("Please fill all fields!"); // Failure toast
+    const transactionData = {
+      ...newTransaction,
+      type: newTransaction.type || type,  
+      particulars: newTransaction.particulars || particulars,  
+    };
+  
+    if (!transactionData.date || !transactionData.time ||
+        !transactionData.to || !transactionData.controlNumber) {
+      toast.error("Please fill all fields!"); 
       return;
     }
   
     try {
-      await addDoc(transactionsCollectionRef, {
-        date: newTransaction.date,
-        time: newTransaction.time,
-        items: newTransaction.items.split(","),
-        from: newTransaction.from,
-        to: newTransaction.to,
-        controlNumber: newTransaction.controlNumber,
+      const transactionsRef = transactionData.transactionType === "Incoming" 
+        ? collection(db, "incomingTransactions") // Save in the "incomingTransactions" collection
+        : transactionsCollectionRef; // Default to "transactions" collection
+  
+      const data = await getDocs(transactionsRef);
+      const existingControlNumbers = data.docs.map(doc => doc.data().controlNumber);
+  
+      if (existingControlNumbers.includes(transactionData.controlNumber)) {
+        toast.error("Control number already exists! Please use a unique control number.");
+        return;
+      }
+  
+      await addDoc(transactionsRef, {
+        ...transactionData,
+        items: transactionData.items ? transactionData.items.split(",") : [], 
       });
   
-      setNewTransaction({ date: "", time: "", items: "", from: "", to: "" });
+      setNewTransaction({
+        date: "", time: "", items: "", to: "", controlNumber: "", transactionType: "Outgoing", type: "", particulars: ""
+      });
+      setType(""); 
+      setParticulars("");
+  
       fetchTransactions();
-      toast.success("Transaction added successfully!"); // Success toast
+      toast.success("Transaction added successfully!");
     } catch (error) {
-      toast.error("Error adding transaction! Please try again."); // Error toast
+      console.error("Firestore Error:", error);
+      toast.error("Error adding transaction! Please try again.");
     }
   };
+  
+  
   
 
   const updateTransaction = async () => {
@@ -125,23 +174,33 @@ const TransactionHistory = ({ darkMode }) => {
       date: newTransaction.date,
       time: newTransaction.time,
       items: newTransaction.items.split(","),
-      from: newTransaction.from,
       to: newTransaction.to,
       controlNumber: newTransaction.controlNumber,
+      transactionType: "Outgoing",
     });
 
-    setNewTransaction({ date: "", time: "", items: "", from: "", to: "" });
+    setNewTransaction({ date: "", time: "", items: "", to: "" });
     setEditId(null);
     fetchTransactions();
   };
 
   const deleteTransaction = async (id) => {
-    await deleteDoc(doc(db, "transactions", id));
-    fetchTransactions();
+    const isConfirmed = window.confirm("Are you sure you want to delete this transaction?");
+    if (!isConfirmed) return;
+  
+    try {
+      await deleteDoc(doc(db, "transactions", id));
+      fetchTransactions();
+      toast.success("Transaction deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+      toast.error("Failed to delete transaction.");
+    }
   };
+  
 
   const cancelEdit = () => {
-    setNewTransaction({ date: "", time: "", items: "", from: "", to: "" });
+    setNewTransaction({ date: "", time: "", items: "", to: "" });
     setEditId(null);
   };
 
@@ -153,12 +212,6 @@ const TransactionHistory = ({ darkMode }) => {
   };
   
 
-  const addShortcutItem = (item) => {
-    setNewTransaction((prev) => ({
-      ...prev,
-      items: prev.items ? `${prev.items}, ${item}` : item,
-    }));
-  };
 
   useEffect(() => {
     let filtered = transactions.filter((t) =>
@@ -213,8 +266,8 @@ const TransactionHistory = ({ darkMode }) => {
 
   
   return (
-    <div className={`w-full p-6 min-h-screen rounded transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-200" : "bg-gray-100 text-black"}`}>
-      <h2 className="text-3xl font-bold mb-4 text-center">Transaction History</h2>
+    <div className={`w-full p-4 min-h-screen rounded transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-200" : "bg-gray-100 text-black"}`}>
+      <h2 className="text-3xl font-bold mb-4 text-center">Incoming Transactions</h2>
   
       {/* Add/Edit Transaction Form */}
       <div className={`p-4 rounded-lg shadow-md mb-6 transition-colors duration-300 ${darkMode ? "bg-gray-800 text-gray-300" : "bg-white"}`}>
@@ -252,40 +305,51 @@ const TransactionHistory = ({ darkMode }) => {
         Today
       </button>
     </div>
-          <input type="text" className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`} placeholder="Items (comma separated)" value={newTransaction.items} onChange={(e) => setNewTransaction({ ...newTransaction, items: e.target.value })} onKeyDown={handleKeyDown} />
-          <div className="flex space-x-2">
-            {['Voucher', 'Payroll', 'Letter'].map((item) => (
-              <button key={item} className="bg-gray-500 text-white px-3 py-1 rounded" onClick={() => addShortcutItem(item)}>
-                {item}
-              </button>
-            ))}
-          </div>
-          <input
+
+    <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">Type</label>
+        <select
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+        >
+          <option value="">Select Type</option>
+          <option value="voucher">Voucher</option>
+          <option value="payroll">Payroll</option>
+          <option value="letter">Letter</option>
+        </select>
+      </div>
+
+      <div className="mb-2">
+      <label className="block text-sm font-medium text-gray-700">Control number</label>
+      <input
             type="text"
             className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`}
-            placeholder="Control Number"
+            placeholder="Enter Control Number"
             value={newTransaction.controlNumber}
             onChange={(e) => setNewTransaction({ ...newTransaction, controlNumber: e.target.value })}
             onKeyDown={handleKeyDown}
           />
-          
-           <div className="relative">
-            <input 
-              type="text" 
-              className={`border p-2 rounded w-full ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}` }
-              placeholder="From" 
-              value={newTransaction.from} 
-              onChange={(e) => setNewTransaction({ ...newTransaction, from: e.target.value })} 
-              list="from-options"
-            />
-            <datalist id="from-options">
-              {predefinedFromOptions.map((option) => (
-                <option key={option} value={option} />
-              ))}
-            </datalist>
-          </div>
+      </div>
+      
 
+      {type === "letter" && (
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700">Particulars</label>
+          <input
+            type="text"
+            className="border p-2 rounded w-full"
+            placeholder="Enter Particulars"
+            value={newTransaction.particulars}
+            onChange={(e) => setNewTransaction({ ...newTransaction, particulars: e.target.value })}
+          />
+        </div>
+      )}
+          
+          
+      
           <div className="relative">
+          <label className="block text-sm font-medium text-gray-700">Incoming from</label>
             <input 
               type="text" 
               className={`border p-2 rounded w-full ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`}
@@ -317,8 +381,6 @@ const TransactionHistory = ({ darkMode }) => {
         <select className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`} onChange={(e) => handleSort(e.target.value)}>
           <option value="date">Sort by Date</option>
           <option value="time">Sort by Time</option>
-          <option value="items">Sort by Items</option>
-          <option value="from">Sort by From</option>
           <option value="to">Sort by To</option>
         </select>
       </div>
@@ -332,10 +394,12 @@ const TransactionHistory = ({ darkMode }) => {
             <tr className={`transition-colors duration-300 ${darkMode ? "bg-gray-700 text-white" : "bg-gray-300"}`}>
               <th className="p-2 border">Date</th>
               <th className="p-2 border">Time</th>
-              <th className="p-2 border">Items</th>
-              <th className="p-2 border">From</th>
               <th className="p-2 border">To</th>
               <th className="p-2 border">Control Number</th>
+              <th className="p-2 border">Type</th>
+              {transactions.some(t => t.type === "letter") && (
+                <th className="p-2 border">Particulars</th>
+              )}
               <th className="p-2 border">Actions</th>
             </tr>
           </thead>
@@ -346,30 +410,17 @@ const TransactionHistory = ({ darkMode }) => {
                 {editId === transaction.id ? (
                   <input type="date" value={editableTransaction.date} onChange={(e) => handleChange(e, "date")} className="border p-1 rounded" />
                 ) : (
-                  transaction.date
+                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">{ transaction.date}</span>
                 )}
               </td>
               <td className="p-2 border text-center">
                 {editId === transaction.id ? (
                   <input type="time" value={editableTransaction.time} onChange={(e) => handleChange(e, "time")} className="border p-1 rounded" />
                 ) : (
-                  formatTimeTo12Hour(transaction.time)
+                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">{formatTimeTo12Hour(transaction.time)}</span>
                 )}
               </td>
-              <td className="p-2 border text-center">
-                {editId === transaction.id ? (
-                  <input type="text" value={editableTransaction.items} onChange={(e) => handleChange(e, "items")} className="border p-1 rounded" />
-                ) : (
-                  transaction.items.join(", ")
-                )}
-              </td>
-              <td className="p-2 border text-center">
-                {editId === transaction.id ? (
-                  <input type="text" value={editableTransaction.from} onChange={(e) => handleChange(e, "from")} className="border p-1 rounded" />
-                ) : (
-                  transaction.from
-                )}
-              </td>
+
               <td className="p-2 border text-center">
                 {editId === transaction.id ? (
                   <input type="text" value={editableTransaction.to} onChange={(e) => handleChange(e, "to")} className="border p-1 rounded" />
@@ -384,6 +435,35 @@ const TransactionHistory = ({ darkMode }) => {
                   transaction.controlNumber || "N/A"
                 )}
               </td>
+              <td className="p-2 border text-center" onDoubleClick={() => handleDoubleClick(transaction)}>
+                  {editId === transaction.id ? (
+                    <select
+                      value={editableTransaction.type}
+                      onChange={(e) => handleChange(e, "type")}
+                      className="border p-2 rounded"
+                    >
+                      <option value="voucher">Voucher</option>
+                      <option value="payroll">Payroll</option>
+                      <option value="letter">Letter</option>
+                    </select>
+                  ) : (
+                    transaction.type
+                  )}
+                </td>
+
+              <td className="p-2 border text-center" onDoubleClick={() => handleDoubleClick(transaction)}>
+              {editId === transaction.id ? (
+                <input
+                  type="text"
+                  value={editableTransaction.particulars}
+                  onChange={(e) => handleChange(e, "particulars")}
+                  className="border p-2 rounded"
+                />
+              ) : (
+                transaction.particulars
+              )}
+            </td>
+            
               <td className="p-2 border text-center flex justify-center space-x-2">
                 {editId === transaction.id ? (
                   <>
@@ -407,3 +487,17 @@ const TransactionHistory = ({ darkMode }) => {
 };
 
 export default TransactionHistory;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
