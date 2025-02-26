@@ -36,6 +36,11 @@ const TransactionHistory = ({ darkMode }) => {
     type: "",  // <-- Added type
     particulars: "" // <-- Added particulars
   });
+
+
+  
+
+
   const [type, setType] = useState("");
   const [particulars, setParticulars] = useState("");
 
