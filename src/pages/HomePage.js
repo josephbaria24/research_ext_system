@@ -80,7 +80,7 @@ const HomePage = () => {
         </div>
         <div className="flex flex-col space-y-3">
           <div className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-700 rounded-lg">
-            {isExpanded && <span className="text-m font-medium dark:text-gray-300">{accountName}</span>}
+            {isExpanded && <span className="text-sm font-medium dark:text-gray-300">{accountName}</span>}
             <FiUser className="text-xl dark:text-gray-300" />
           </div>
           <button className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-700 rounded-lg" onClick={() => setDarkMode(!darkMode)}>

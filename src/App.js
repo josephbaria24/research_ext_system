@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { auth, provider, signInWithPopup, db, collection, query, where, getDocs } from "./firebase";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import './index.css';

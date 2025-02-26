@@ -239,7 +239,7 @@ const TransactionHistory = ({ darkMode }) => {
 
   
   return (
-    <div className={`w-full p-4 min-h-screen rounded transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-200" : "bg-gray-100 text-black"}`}>
+    <div className={`w-full p-1 min-h-screen rounded transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-200" : "bg-gray-100 text-black"}`}>
       <h2 className="text-3xl font-bold mb-4 text-center">Outgoing Transactions</h2>
   
       {/* Add/Edit Transaction Form */}
@@ -306,18 +306,22 @@ const TransactionHistory = ({ darkMode }) => {
       </div>
       
 
-      {type === "letter" && (
+      {type === "voucher" || type === "letter" ? (
         <div className="mb-2">
           <label className="block text-sm font-medium text-gray-700">Particulars</label>
-          <input
-            type="text"
-            className="border p-2 rounded w-full"
+          <textarea
+            className="border p-2 rounded w-full resize-none overflow-hidden"
             placeholder="Enter Particulars"
             value={newTransaction.particulars}
             onChange={(e) => setNewTransaction({ ...newTransaction, particulars: e.target.value })}
-          />
+            rows="1"
+            onInput={(e) => {
+                e.target.style.height = "auto"; // Reset height to recalculate
+                e.target.style.height = `${e.target.scrollHeight}px`; // Adjust height dynamically
+            }}
+            />
         </div>
-      )}
+      ): null}
           
           
       

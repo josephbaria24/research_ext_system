@@ -29,41 +29,19 @@ const TransactionHistory = ({ darkMode }) => {
     date: "",
     time: "",
     items: "",
-    to: "",
+    from: "",
     controlNumber: "",
     transactionType: "Outgoing",
-    type: "",  // <-- Added type
-    particulars: "" // <-- Added particulars
+    type: "",
+    particulars: "" 
   });
 
 
-  useEffect(() => {
-    const autoAddTransaction = async () => {
-      if (!newTransaction.date || !newTransaction.time || !newTransaction.to || !newTransaction.controlNumber) {
-        return; // Don't proceed if required fields are missing
-      }
-  
-      try {
-        const transactionRef = doc(db, "transactions", newTransaction.controlNumber); // Use controlNumber as unique ID
-  
-        await setDoc(transactionRef, {
-          ...newTransaction,
-          items: newTransaction.items ? newTransaction.items.split(",") : [],
-        });
-  
-        console.log("Transaction auto-updated in Firestore");
-      } catch (error) {
-        console.error("Firestore Auto-Update Error:", error);
-      }
-    };
-  
-    autoAddTransaction();
-  }, [newTransaction]);
   
   const [type, setType] = useState("");
   const [particulars, setParticulars] = useState("");
 
-  const transactionsCollectionRef = collection(db, "transactions");
+  const transactionsCollectionRef = collection(db, "incomingTransactions");
 
   const fetchTransactions = async () => {
   const transactionsRef = collection(db, "incomingTransactions"); // Change collection here
@@ -95,7 +73,7 @@ const TransactionHistory = ({ darkMode }) => {
   const saveTransaction = async () => {
     if (!editId) return;
   
-    const transactionRef = doc(db, "transactions", editId);
+    const transactionRef = doc(db, "incomingTransactions", editId);
     
     await updateDoc(transactionRef, {
       ...editableTransaction,
@@ -126,7 +104,7 @@ const TransactionHistory = ({ darkMode }) => {
     };
   
     if (!transactionData.date || !transactionData.time ||
-        !transactionData.to || !transactionData.controlNumber) {
+        !transactionData.from || !transactionData.controlNumber) {
       toast.error("Please fill all fields!"); 
       return;
     }
@@ -150,7 +128,7 @@ const TransactionHistory = ({ darkMode }) => {
       });
   
       setNewTransaction({
-        date: "", time: "", items: "", to: "", controlNumber: "", transactionType: "Outgoing", type: "", particulars: ""
+        date: "", time: "", items: "", from: "", controlNumber: "", transactionType: "Incoming", type: "", particulars: ""
       });
       setType(""); 
       setParticulars("");
@@ -169,17 +147,17 @@ const TransactionHistory = ({ darkMode }) => {
   const updateTransaction = async () => {
     if (!editId) return;
 
-    const transactionRef = doc(db, "transactions", editId);
+    const transactionRef = doc(db, "incomingTransactions", editId);
     await updateDoc(transactionRef, {
       date: newTransaction.date,
       time: newTransaction.time,
       items: newTransaction.items.split(","),
-      to: newTransaction.to,
+      from: newTransaction.from,
       controlNumber: newTransaction.controlNumber,
-      transactionType: "Outgoing",
+      transactionType: "Incoming",
     });
 
-    setNewTransaction({ date: "", time: "", items: "", to: "" });
+    setNewTransaction({ date: "", time: "", items: "", from: "" });
     setEditId(null);
     fetchTransactions();
   };
@@ -189,7 +167,7 @@ const TransactionHistory = ({ darkMode }) => {
     if (!isConfirmed) return;
   
     try {
-      await deleteDoc(doc(db, "transactions", id));
+      await deleteDoc(doc(db, "incomingTransactions", id));
       fetchTransactions();
       toast.success("Transaction deleted successfully!");
     } catch (error) {
@@ -200,7 +178,7 @@ const TransactionHistory = ({ darkMode }) => {
   
 
   const cancelEdit = () => {
-    setNewTransaction({ date: "", time: "", items: "", to: "" });
+    setNewTransaction({ date: "", time: "", items: "", from: "" });
     setEditId(null);
   };
 
@@ -266,7 +244,7 @@ const TransactionHistory = ({ darkMode }) => {
 
   
   return (
-    <div className={`w-full p-4 min-h-screen rounded transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-200" : "bg-gray-100 text-black"}`}>
+    <div className={`w-full p-1 min-h-screen rounded transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-200" : "bg-gray-100 text-black"}`}>
       <h2 className="text-3xl font-bold mb-4 text-center">Incoming Transactions</h2>
   
       {/* Add/Edit Transaction Form */}
@@ -333,18 +311,23 @@ const TransactionHistory = ({ darkMode }) => {
       </div>
       
 
-      {type === "letter" && (
+      {type === "voucher" || type === "letter" ? (
         <div className="mb-2">
           <label className="block text-sm font-medium text-gray-700">Particulars</label>
-          <input
-            type="text"
-            className="border p-2 rounded w-full"
+          <textarea
+            className="border p-2 rounded w-full resize-none overflow-hidden"
             placeholder="Enter Particulars"
             value={newTransaction.particulars}
             onChange={(e) => setNewTransaction({ ...newTransaction, particulars: e.target.value })}
-          />
+            rows="1"
+            onInput={(e) => {
+                e.target.style.height = "auto"; // Reset height to recalculate
+                e.target.style.height = `${e.target.scrollHeight}px`; // Adjust height dynamically
+            }}
+            />
+
         </div>
-      )}
+      ): null}
           
           
       
@@ -353,12 +336,12 @@ const TransactionHistory = ({ darkMode }) => {
             <input 
               type="text" 
               className={`border p-2 rounded w-full ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`}
-              placeholder="To" 
-              value={newTransaction.to} 
-              onChange={(e) => setNewTransaction({ ...newTransaction, to: e.target.value })} 
-              list="to-options"
+              placeholder="From" 
+              value={newTransaction.from} 
+              onChange={(e) => setNewTransaction({ ...newTransaction, from: e.target.value })} 
+              list="from-options"
             />
-            <datalist id="to-options">
+            <datalist id="from-options">
               {predefinedToOptions.map((option) => (
                 <option key={option} value={option} />
               ))}
@@ -381,7 +364,7 @@ const TransactionHistory = ({ darkMode }) => {
         <select className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`} onChange={(e) => handleSort(e.target.value)}>
           <option value="date">Sort by Date</option>
           <option value="time">Sort by Time</option>
-          <option value="to">Sort by To</option>
+          <option value="from">Sort by From</option>
         </select>
       </div>
       
@@ -394,7 +377,7 @@ const TransactionHistory = ({ darkMode }) => {
             <tr className={`transition-colors duration-300 ${darkMode ? "bg-gray-700 text-white" : "bg-gray-300"}`}>
               <th className="p-2 border">Date</th>
               <th className="p-2 border">Time</th>
-              <th className="p-2 border">To</th>
+              <th className="p-2 border">From</th>
               <th className="p-2 border">Control Number</th>
               <th className="p-2 border">Type</th>
               {transactions.some(t => t.type === "letter") && (
@@ -403,6 +386,8 @@ const TransactionHistory = ({ darkMode }) => {
               <th className="p-2 border">Actions</th>
             </tr>
           </thead>
+          
+          
           <tbody>
             {filteredTransactions.map((transaction) => (
               <tr key={transaction.id} className="border-t" onDoubleClick={() => handleDoubleClick(transaction)}>
@@ -423,9 +408,9 @@ const TransactionHistory = ({ darkMode }) => {
 
               <td className="p-2 border text-center">
                 {editId === transaction.id ? (
-                  <input type="text" value={editableTransaction.to} onChange={(e) => handleChange(e, "to")} className="border p-1 rounded" />
+                  <input type="text" value={editableTransaction.from} onChange={(e) => handleChange(e, "from")} className="border p-1 rounded" />
                 ) : (
-                  transaction.to
+                  transaction.from
                 )}
               </td>
               <td className="p-2 border text-center">
@@ -480,24 +465,10 @@ const TransactionHistory = ({ darkMode }) => {
             ))}
           </tbody>
         </table>
-      </div>
+        </div>
       <ToastContainer />
     </div>
   );
 };
 
 export default TransactionHistory;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
