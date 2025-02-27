@@ -43,8 +43,17 @@ const HomePage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
-      {/* Sidebar (Fixed) */}
+    <div
+  className={`flex min-h-screen transition-colors duration-300 
+    ${
+      darkMode
+        ? "bg-gray-900 text-gray-200"
+        : "bg-gradient-to-br from-orange-200 via-white to-peach-100 text-black"
+    }`}
+>
+
+  
+      {/* Sidebar */}
       <div
         className={`h-screen flex flex-col justify-between bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 ${
           isExpanded ? "w-64 p-4" : "w-16 p-2"
@@ -60,7 +69,7 @@ const HomePage = () => {
           <nav className="space-y-3">
             <button
               className={`flex items-center space-x-2 p-4 w-full rounded-lg shadow transition duration-300 ${
-                selectedPage === "transactions" ? "bg-orange-500 text-white" : "bg-orange-100 dark:bg-gray-700 dark:text-gray-300"
+                selectedPage === "transactions" ? "bg-customOrange text-white" : "bg-orange-100 dark:bg-gray-700 dark:text-gray-300"
               }`}
               onClick={() => setSelectedPage("transactions")}
             >
@@ -69,7 +78,7 @@ const HomePage = () => {
             </button>
             <button
               className={`flex items-center space-x-2 p-4 w-full rounded-lg shadow transition duration-300 ${
-                selectedPage === "documents" ? "bg-orange-500 text-white" : "bg-orange-100 dark:bg-gray-700 dark:text-gray-300"
+                selectedPage === "documents" ? "bg-customOrange text-white" : "bg-orange-100 dark:bg-gray-700 dark:text-gray-300"
               }`}
               onClick={() => setSelectedPage("documents")}
             >
@@ -79,13 +88,14 @@ const HomePage = () => {
           </nav>
         </div>
         <div className="flex flex-col space-y-3">
-          <div className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-700 rounded-lg">
-            {isExpanded && <span className="text-sm font-medium dark:text-gray-300">{accountName}</span>}
-            <FiUser className="text-xl dark:text-gray-300" />
-          </div>
-          <button className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-700 rounded-lg" onClick={() => setDarkMode(!darkMode)}>
-            {isExpanded && <span className="text-m font-medium dark:text-gray-300">Theme</span>}
-            {darkMode ? <FiSun className="text-yellow-400" /> : <FiMoon className="text-gray-700 dark:text-gray-300" />}
+        <div className="flex items-center justify-between p-4 border-2 border-primary rounded-lg">
+          {isExpanded && <span className="text-sm font-medium dark:text-gray-300">{accountName}</span>}
+          <FiUser className="text-xl dark:text-gray-300" />
+        </div>
+
+          <button className="flex items-center justify-between p-4 bg-primary dark:bg-gray-700 rounded-lg" onClick={() => setDarkMode(!darkMode)}>
+            {isExpanded && <span className="text-m font-medium text-white dark:text-gray-300">Theme</span>}
+            {darkMode ? <FiSun className="text-yellow-400" /> : <FiMoon className="text-white dark:text-gray-300" />}
           </button>
         </div>
       </div>

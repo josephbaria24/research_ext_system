@@ -7,8 +7,14 @@ module.exports = {
         sans: ["KyivType", "sans-serif"], // Set KyivType as the default sans-serif font
       },
       colors: {
-        primary: "#4F46E5", // Custom primary color
-        accent: "#2563EB",
+        primary: "#ff730f", // Custom primary color
+        accent: "#1E3E62",
+        customOrange: "#ff730f",
+        peach: {
+          100: "#ffe5b4",
+          200: "#ffcc99",
+          300: "#ffb380",
+        },
       },
       backdropBlur: {
         xs: "2px",

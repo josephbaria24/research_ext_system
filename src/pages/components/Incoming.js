@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { db } from "../../firebase";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FaSearch } from "react-icons/fa";
 import { ToastContainer } from 'react-toastify';
 import {
   collection,
@@ -150,52 +151,6 @@ const TransactionHistory = ({ darkMode }) => {
     }
   };
 
-  // const addTransaction = async () => {
-  //   const transactionData = {
-  //     ...newTransaction,
-  //     type: newTransaction.type || type,  
-  //     particulars: newTransaction.particulars || particulars,  
-  //   };
-  
-  //   if (!transactionData.date || !transactionData.time ||
-  //       !transactionData.from || !transactionData.controlNumber) {
-  //     toast.error("Please fill all fields!"); 
-  //     return;
-  //   }
-  
-  //   try {
-  //     const transactionsRef = transactionData.transactionType === "Incoming" 
-  //       ? collection(db, "incomingTransactions") // Save in the "incomingTransactions" collection
-  //       : transactionsCollectionRef; // Default to "transactions" collection
-  
-  //     const data = await getDocs(transactionsRef);
-  //     const existingControlNumbers = data.docs.map(doc => doc.data().controlNumber);
-  
-  //     if (existingControlNumbers.includes(transactionData.controlNumber)) {
-  //       toast.error("Control number already exists! Please use a unique control number.");
-  //       return;
-  //     }
-  
-  //     await addDoc(transactionsRef, {
-  //       ...transactionData,
-  //       items: transactionData.items ? transactionData.items.split(",") : [], 
-  //     });
-  
-  //     setNewTransaction({
-  //       date: "", time: "", items: "", from: "", controlNumber: "", transactionType: "Incoming", type: "", particulars: ""
-  //     });
-  //     setType(""); 
-  //     setParticulars("");
-  
-  //     fetchTransactions();
-  //     toast.success("Transaction added successfully!");
-  //   } catch (error) {
-  //     console.error("Firestore Error:", error);
-  //     toast.error("Error adding transaction! Please try again.");
-  //   }
-  // };
-  
-  
   
 
   const updateTransaction = async () => {
@@ -298,8 +253,11 @@ const TransactionHistory = ({ darkMode }) => {
 
   
   return (
-    <div className={`w-full p-1 min-h-screen rounded transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-200" : "bg-gray-100 text-black"}`}>
-      <h2 className="text-3xl font-bold mb-4 text-center">Incoming transactions</h2>
+    <div className="w-full p-1 min-h-screen rounded transition-colors duration-300 bg-transparent">
+
+<div className="border-2 border-primary rounded-lg p-4 mb-2">
+      <h2 className="text-3xl font-bold text-center">INCOMING TRANSACTIONS</h2>
+    </div>
   
       {/* Add/Edit Transaction Form */}
       <div className={`p-4 rounded-lg shadow-md mb-6 transition-colors duration-300 ${darkMode ? "bg-gray-800 text-gray-300" : "bg-white"}`}>
@@ -310,7 +268,9 @@ const TransactionHistory = ({ darkMode }) => {
       <div className="relative">
         <input
           type="date"
-          className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`}
+          className={`border p-2 rounded transition-colors duration-300 outline-none
+            ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
+                      : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
           value={newTransaction.date}
           onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
           onKeyDown={handleKeyDown}
@@ -321,18 +281,22 @@ const TransactionHistory = ({ darkMode }) => {
       <div className="relative">
         <input
           type="time"
-          className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`}
+          className={`border p-2 rounded transition-colors duration-300 outline-none
+            ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
+                      : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
           value={newTransaction.time}
           onChange={(e) => setNewTransaction({ ...newTransaction, time: e.target.value })}
           onKeyDown={handleKeyDown}
         />
       </div>
 
+
       {/* Today Button */}
       <button
         type="button"
         onClick={handleTodayClick}
-        className={`px-4 py-2 rounded ${darkMode ? "bg-gray-600 text-white" : "bg-blue-500 text-white"}`}
+        className={`px-4 py-2 rounded ${darkMode ? "bg-primary text-white" : "bg-primary text-white"}`}
+        
       >
         Today
       </button>
@@ -341,7 +305,9 @@ const TransactionHistory = ({ darkMode }) => {
     <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Type</label>
         <select
-          className={`mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`}
+          className={`mt-1 block w-full border rounded-md shadow-sm p-2 transition-colors duration-300 outline-none
+            ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400"
+                      : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
           value={type}
           onChange={(e) => setType(e.target.value)}
         >
@@ -356,7 +322,9 @@ const TransactionHistory = ({ darkMode }) => {
       <label className="block text-sm font-medium text-gray-700">Control number</label>
       <input
             type="text"
-            className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`}
+            className={`border p-2 rounded transition-colors duration-300 outline-none 
+            ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
+                      : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
             placeholder="Enter Control Number"
             value={newTransaction.controlNumber}
             onChange={(e) => setNewTransaction({ ...newTransaction, controlNumber: e.target.value })}
@@ -369,7 +337,9 @@ const TransactionHistory = ({ darkMode }) => {
         <div className="mb-2">
           <label className="block text-sm font-medium text-gray-700">Particulars</label>
           <textarea
-            className="border p-2 rounded w-full resize-none overflow-hidden"
+            className={`border p-2 rounded w-full resize-none overflow-hidden transition-colors duration-300 outline-none
+            ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
+                      : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
             placeholder="Enter Particulars"
             value={newTransaction.particulars}
             onChange={(e) => setNewTransaction({ ...newTransaction, particulars: e.target.value })}
@@ -389,7 +359,9 @@ const TransactionHistory = ({ darkMode }) => {
           <label className="block text-sm font-medium text-gray-700">Incoming from</label>
             <input 
               type="text" 
-              className={`border p-2 rounded w-full ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`}
+              className={`border p-2 rounded w-full transition-colors duration-300 outline-none
+              ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
+                        : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
               placeholder="From" 
               value={newTransaction.from} 
               onChange={(e) => setNewTransaction({ ...newTransaction, from: e.target.value })} 
@@ -404,7 +376,7 @@ const TransactionHistory = ({ darkMode }) => {
         </div>
         <div className="mt-4 flex justify-end">
         <button 
-            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center" 
+            className="bg-accent text-white px-4 py-2 rounded flex items-center" 
             onClick={addTransaction}
             disabled={loading} // Disable when loading
           >
@@ -428,7 +400,18 @@ const TransactionHistory = ({ darkMode }) => {
 
         {/* Search and Sort Controls */}
         <div className="flex justify-between mb-4">
-        <input type="text" placeholder="Search..." className={`border p-2 rounded w-1/2 ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`} value={search} onChange={(e) => setSearch(e.target.value)} />
+        <div className="relative w-1/2">
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className={`border p-2 pl-10 rounded w-full transition-colors duration-300 outline-none
+                ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
+                          : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         <select className={`border p-2 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-white text-black"}`} onChange={(e) => handleSort(e.target.value)}>
           <option value="date">Sort by Date</option>
           <option value="time">Sort by Time</option>
@@ -443,7 +426,7 @@ const TransactionHistory = ({ darkMode }) => {
         
         <table className="w-full border-collapse">
           <thead>
-            <tr className={`transition-colors duration-300 ${darkMode ? "bg-gray-700 text-white" : "bg-gray-300"}`}>
+            <tr className={`transition-colors duration-300 ${darkMode ? "bg-gray-700 text-white" : "bg-accent text-white"}`}>
               <th className="p-2 border">Date</th>
               <th className="p-2 border">Time</th>
               <th className="p-2 border">From</th>
@@ -452,7 +435,7 @@ const TransactionHistory = ({ darkMode }) => {
               {transactions.some(t => t.type === "letter" || t.type === "payroll" || t.type === "voucher") && (
                 <th className="p-2 border">Particulars</th>
               )}
-              <th className="p-2 border">Actions</th>
+              <th className="p-2 border">Action</th>
             </tr>
           </thead>
           <div className="max-h-96 overflow-y-auto border rounded"></div>
