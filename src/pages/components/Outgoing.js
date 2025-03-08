@@ -147,47 +147,7 @@ const TransactionHistory = ({ darkMode }) => {
       setLoading(false); // Reset loading state after transaction completes
     }
   };
-  // const addTransaction = async () => {
-  //   const transactionData = {
-  //     ...newTransaction,
-  //     type: newTransaction.type || type,  // Ensure type is added
-  //     particulars: newTransaction.particulars || particulars,  // Ensure particulars is added
-  //   };
-  
-  //   if (!transactionData.date || !transactionData.time ||
-  //       !transactionData.to || !transactionData.controlNumber) {
-  //     toast.error("Please fill all fields!"); 
-  //     return;
-  //   }
-  
-  //   try {
-  //     const data = await getDocs(transactionsCollectionRef);
-  //     const existingControlNumbers = data.docs.map(doc => doc.data().controlNumber);
-  
-  //     if (existingControlNumbers.includes(transactionData.controlNumber)) {
-  //       toast.error("Control number already exists! Please use a unique control number.");
-  //       return;
-  //     }
-  
-  //     await addDoc(transactionsCollectionRef, {
-  //       ...transactionData,
-  //       items: transactionData.items ? transactionData.items.split(",") : [], // Store items as an array
-  //     });
-  
-  //     setNewTransaction({
-  //       date: "", time: "", items: "", to: "", controlNumber: "", transactionType: "Outgoing", type: "", particulars: ""
-  //     });
-  //     setType(""); 
-  //     setParticulars("");
-  
-  //     fetchTransactions();
-  //     toast.success("Transaction added successfully!");
-  //   } catch (error) {
-  //     console.error("Firestore Error:", error);
-  //     toast.error("Error adding transaction! Please try again.");
-  //   }
-  // };
-  
+
   
 
   const updateTransaction = async () => {
@@ -309,52 +269,63 @@ const TransactionHistory = ({ darkMode }) => {
     </div>
 
   
-      {/* Add/Edit Transaction Form */}
-      <div className={`p-4 rounded-lg shadow-md mb-6 transition-colors duration-300 ${darkMode ? "bg-gray-800 text-gray-300" : "bg-white"}`}>
-        <h3 className="text-xl font-semibold mb-2">{editId ? "Edit Transaction" : "Add Transaction"}</h3>
-        <div className="grid grid-cols-2 gap-4">
-        <div className="flex items-center space-x-4">
-      {/* Date Input */}
-      <div className="relative">
-        <input
-          type="date"
-          className={`border p-2 rounded transition-colors duration-300 outline-none
-            ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
-                      : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
-          value={newTransaction.date}
-          onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
-          onKeyDown={handleKeyDown}
-        />
-      </div>
+{/* Add/Edit Transaction Form */}
+<div className={`p-4 rounded-lg shadow-md mb-6 transition-colors duration-300 ${darkMode ? "bg-gray-800 text-gray-300" : "bg-white"}`}>
+  <h3 className="text-xl font-semibold mb-2">{editId ? "Edit Transaction" : "Add Transaction"}</h3>
 
-      {/* Time Input */}
-      <div className="relative">
-        <input
-          type="time"
-          className={`border p-2 rounded transition-colors duration-300 outline-none
-            ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
-                      : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
-          value={newTransaction.time}
-          onChange={(e) => setNewTransaction({ ...newTransaction, time: e.target.value })}
-          onKeyDown={handleKeyDown}
-        />
-      </div>
-
-
-      {/* Today Button */}
+  {/* Main Container for Inputs */}
+  <div className="flex space-x-4"> {/* Reduced space-x-6 to space-x-4 */}
+  {/* Left Side: Date, Time, Control Number, Type, Incoming From */}
+  <div className="flex-1 max-w-[800px]">
+    {/* Date, Time, and Today Button */}
+    <div className="flex items-center space-x-4 mb-4">
+      <input
+        type="date"
+        className={`border p-2 rounded transition-colors duration-300 outline-none w-[250px] w-1/3
+          ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
+                    : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
+        value={newTransaction.date}
+        onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
+        onKeyDown={handleKeyDown}
+      />
+      <input
+        type="time"
+        className={`border p-2 rounded transition-colors duration-300 outline-none w-[250px] w-1/3
+          ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
+                    : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
+        value={newTransaction.time}
+        onChange={(e) => setNewTransaction({ ...newTransaction, time: e.target.value })}
+        onKeyDown={handleKeyDown}
+      />
       <button
         type="button"
         onClick={handleTodayClick}
-        className={`px-4 py-2 rounded ${darkMode ? "bg-primary text-white" : "bg-primary text-white"}`}
+        className={`px-4 py-2 rounded max-w-[130px] w-full text-center 
+          ${darkMode ? "bg-primary text-white" : "bg-primary text-white"}`}
       >
         Today
       </button>
     </div>
 
-    <div className="mb-4 ">
-        <label className="block text-sm font-medium text-gray-700">Type</label>
+    {/* Type and Control Number in the Same Row */}
+    <div className="flex space-x-4 mb-4">
+      <div className="max-w-[500px]">
+        <label className={`block text-sm font-medium text-gray-700 ${darkMode ? " text-white" : " text-black"}`}>Control Number</label>
+        <input
+          type="text"
+          className={`border p-2 rounded transition-colors duration-300 outline-none max-w-[350px] 
+            ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
+                      : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
+          placeholder="Enter Control Number"
+          value={newTransaction.controlNumber}
+          onChange={(e) => setNewTransaction({ ...newTransaction, controlNumber: e.target.value })}
+          onKeyDown={handleKeyDown}
+        />
+      </div>
+      <div className="max-w-[400px]">
+        <label className={`block text-sm font-medium text-gray-700 ${darkMode ? " text-white" : " text-black"}`}>Type</label>
         <select
-          className={`mt-1 block w-full border rounded-md shadow-sm p-2 transition-colors duration-300 outline-none
+          className={`mt-0 block w-[145px] border rounded-md shadow-sm p-2 transition-colors max-w-[400px] duration-300 outline-none
             ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400"
                       : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
           value={type}
@@ -365,88 +336,68 @@ const TransactionHistory = ({ darkMode }) => {
           <option value="payroll">Payroll</option>
           <option value="letter">Letter</option>
         </select>
-
       </div>
-
-      <div className="mb-2">
-      <label className="block text-sm font-medium text-gray-700">Control number</label>
-      <input
-          type="text"
-          className={`border p-2 rounded transition-colors duration-300 outline-none 
+      <div className="w-full">
+        <label className={`block text-sm font-medium text-gray-700 ${darkMode ? " text-white" : " text-black"}`}>Outgoing to</label>
+        <input 
+          type="text" 
+          className={`border p-2 rounded w-[243px] transition-colors duration-300 outline-none
             ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
                       : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
-          placeholder="Enter Control Number"
-          value={newTransaction.controlNumber}
-          onChange={(e) => setNewTransaction({ ...newTransaction, controlNumber: e.target.value })}
-          onKeyDown={handleKeyDown}
+          placeholder="To" 
+          value={newTransaction.to} 
+          onChange={(e) => setNewTransaction({ ...newTransaction, to: e.target.value })} 
+          list="to-options"
         />
-
+        <datalist id="to-options">
+          {predefinedToOptions.map((option) => (
+            <option key={option} value={option} />
+          ))}
+        </datalist>
       </div>
-      
+    </div>
+  </div>
 
-      {type === "voucher" || type === "letter" || type === "payroll" ? (
-        <div className="mb-2">
-          <label className="block text-sm font-medium text-gray-700">Particulars</label>
-          <textarea
-            className="border p-2 rounded w-full resize-none overflow-hidden"
-            placeholder="Enter Particulars"
-            value={newTransaction.particulars}
-            onChange={(e) => setNewTransaction({ ...newTransaction, particulars: e.target.value })}
-            rows="1"
-            onInput={(e) => {
-                e.target.style.height = "auto"; // Reset height to recalculate
-                e.target.style.height = `${e.target.scrollHeight}px`; // Adjust height dynamically
-            }}
-            />
-        </div>
-      ): null}
-          
-          
-      
-          <div className="relative">
-          <label className="block text-sm font-medium text-gray-700">Outgoing to</label>
-          <input 
-            type="text" 
-            className={`border p-2 rounded w-full transition-colors duration-300 outline-none
-              ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
-                        : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
-            placeholder="To" 
-            value={newTransaction.to} 
-            onChange={(e) => setNewTransaction({ ...newTransaction, to: e.target.value })} 
-            list="to-options"
-          />
+  {/* Divider */}
+  <div className="w-px bg-gray-300 h-[180px] mx-2"></div> {/* Reduced mx-3 to mx-2 */}
 
-            <datalist id="to-options">
-              {predefinedToOptions.map((option) => (
-                <option key={option} value={option} />
-              ))}
-            </datalist>
-          </div>
-        </div>
-        <div className="mt-4 flex justify-end">
-        <button 
-            className="bg-accent text-white px-4 py-2 rounded flex items-center" 
-            onClick={addTransaction}
-            disabled={loading} // Disable when loading
-          >
-            {loading ? (
-              <>
-                <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 11-8 8z"></path>
-                </svg>
-                Adding...
-              </>
-            ) : (
-              <>
-                <FiPlus className="mr-2" /> Add Transaction
-              </>
-            )}
-          </button>
-        </div>
+  {/* Right Side: Particulars */}
+  <div className="w-full"> {/* Reduced width from w-[200px] to w-[180px] */}
+    <label className={`block text-lg font-medium text-gray-700 ${darkMode ? " text-white" : " text-black"}`}>Particulars</label>
+    <textarea
+      className={`border p-2 rounded w-full h-[150px] resize-none transition-colors duration-300 outline-none
+        ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
+                  : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
+      placeholder="Enter Particulars"
+      value={newTransaction.particulars}
+      onChange={(e) => setNewTransaction({ ...newTransaction, particulars: e.target.value })}
+    />
+  </div>
+</div>
 
-        
-      </div>
+  {/* Add Transaction Button */}
+  <div className="flex justify-end mt-6">
+    <button 
+      className="bg-accent text-white px-4 py-2 rounded flex items-center"
+      onClick={addTransaction}
+      disabled={loading}
+    >
+      {loading ? (
+        <>
+          <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 11-8 8z"></path>
+          </svg>
+          Adding...
+        </>
+      ) : (
+        <>
+          <FiPlus className="mr-2" /> Add Transaction
+        </>
+      )}
+    </button>
+  </div>
+</div>
 
         {/* Search and Sort Controls */}
         <div className="flex justify-between mb-4">
@@ -471,100 +422,94 @@ const TransactionHistory = ({ darkMode }) => {
       
 
       {/* Transactions List */}
-      <div className={`p-4 rounded-lg shadow-md transition-colors duration-300 overflow-y-auto ${darkMode ? "bg-gray-900 text-gray-300" : "bg-white"}`}>
-        <h3 className="text-xl font-semibold mb-2">Transaction List</h3>
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className={`transition-colors duration-300 ${darkMode ? "bg-gray-700 text-white" : "bg-accent text-white"}`}>
-              <th className="p-2 border">Date</th>
-              <th className="p-2 border">Time</th>
-              <th className="p-2 border">To</th>
-              <th className="p-2 border">Control Number</th>
-              <th className="p-2 border">Type</th>
-              {transactions.some(t => t.type === "letter") && (
-                <th className="p-2 border">Particulars</th>
-              )}
-              <th className="p-2 border">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTransactions.map((transaction) => (
-              <tr key={transaction.id} className="border-t" onDoubleClick={() => handleDoubleClick(transaction)}>
-              <td className="p-2 border text-center">
-                {editId === transaction.id ? (
-                  <input type="date" value={editableTransaction.date} onChange={(e) => handleChange(e, "date")} className="border p-1 rounded" />
-                ) : (
-                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">{ transaction.date}</span>
-                )}
-              </td>
-              <td className="p-2 border text-center">
-                {editId === transaction.id ? (
-                  <input type="time" value={editableTransaction.time} onChange={(e) => handleChange(e, "time")} className="border p-1 rounded" />
-                ) : (
-                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">{formatTimeTo12Hour(transaction.time)}</span>
-                )}
-              </td>
+<div className={`p-4 rounded-lg shadow-md transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-300" : "bg-white"}`}>
+  <h3 className="text-xl font-semibold mb-2">Transaction List</h3>
 
-              <td className="p-2 border text-center">
-                {editId === transaction.id ? (
-                  <input type="text" value={editableTransaction.to} onChange={(e) => handleChange(e, "to")} className="border p-1 rounded" />
-                ) : (
-                  transaction.to
-                )}
-              </td>
-              <td className="p-2 border text-center">
-                {editId === transaction.id ? (
-                  <input type="text" value={editableTransaction.controlNumber} onChange={(e) => handleChange(e, "controlNumber")} className="border p-1 rounded" />
-                ) : (
-                  transaction.controlNumber || "N/A"
-                )}
-              </td>
-              <td className="p-2 border text-center" onDoubleClick={() => handleDoubleClick(transaction)}>
-                  {editId === transaction.id ? (
-                    <select
-                      value={editableTransaction.type}
-                      onChange={(e) => handleChange(e, "type")}
-                      className="border p-2 rounded"
-                    >
-                      <option value="voucher">Voucher</option>
-                      <option value="payroll">Payroll</option>
-                      <option value="letter">Letter</option>
-                    </select>
-                  ) : (
-                    transaction.type
-                  )}
-                </td>
-
-              <td className="p-2 border text-center" onDoubleClick={() => handleDoubleClick(transaction)}>
+  {/* Scrollable Wrapper */}
+  <div className="overflow-y-auto max-h-[400px] border border-gray-300 rounded-md">
+    <table className="w-full border-collapse">
+      <thead>
+        <tr className={`transition-colors duration-300 ${darkMode ? "bg-gray-700 text-white" : "bg-accent text-white"}`}>
+          <th className="p-2 border">Date</th>
+          <th className="p-2 border">Time</th>
+          <th className="p-2 border">To</th>
+          <th className="p-2 border" >Control Number</th>
+          <th className="p-2 border">Type</th>
+          {transactions.some(t => t.type === "letter") && (
+            <th className="p-2 border">Particulars</th>
+          )}
+          <th className="p-2 border">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filteredTransactions.map((transaction) => (
+          <tr key={transaction.id} className="border-t" onDoubleClick={() => handleDoubleClick(transaction)}>
+            <td className="p-2 border text-center">
               {editId === transaction.id ? (
-                <input
-                  type="text"
-                  value={editableTransaction.particulars}
-                  onChange={(e) => handleChange(e, "particulars")}
-                  className="border p-2 rounded"
-                />
+                <input type="date" value={editableTransaction.date} onChange={(e) => handleChange(e, "date")} className="border p-1 rounded" />
               ) : (
-                transaction.particulars
+                <span className="whitespace-nowrap overflow-hidden text-ellipsis">{transaction.date}</span>
               )}
             </td>
-            
-              <td className="p-2 border text-center flex justify-center space-x-2">
+            <td className="p-2 border text-center">
+              {editId === transaction.id ? (
+                <input type="time" value={editableTransaction.time} onChange={(e) => handleChange(e, "time")} className="border p-1 rounded" />
+              ) : (
+                <span className="whitespace-nowrap overflow-hidden text-ellipsis">{formatTimeTo12Hour(transaction.time)}</span>
+              )}
+            </td>
+            <td className="p-2 border text-center">
+              {editId === transaction.id ? (
+                <input type="text" value={editableTransaction.to} onChange={(e) => handleChange(e, "to")} className="border p-1 rounded" />
+              ) : (
+                transaction.to
+              )}
+            </td>
+            <td className="p-2 border text-center">
+              {editId === transaction.id ? (
+                <input type="text" value={editableTransaction.controlNumber} onChange={(e) => handleChange(e, "controlNumber")} className="border p-1 rounded" />
+              ) : (
+                transaction.controlNumber || "N/A"
+              )}
+            </td>
+            <td className="p-2 border text-center" onDoubleClick={() => handleDoubleClick(transaction)}>
+              {editId === transaction.id ? (
+                <select value={editableTransaction.type} onChange={(e) => handleChange(e, "type")} className="border p-2 rounded">
+                  <option value="voucher">Voucher</option>
+                  <option value="payroll">Payroll</option>
+                  <option value="letter">Letter</option>
+                </select>
+              ) : (
+                transaction.type
+              )}
+            </td>
+            {transactions.some(t => t.type === "letter") && (
+              <td className="p-2 border text-center">
                 {editId === transaction.id ? (
-                  <>
-                    <button onClick={saveTransaction} className="bg-green-500 text-white px-3 py-1 rounded"><FiSave /></button>
-                    <button onClick={cancelEdit} className="bg-gray-500 text-white px-3 py-1 rounded">Cancel Editing</button>
-                  </>
-                ) : null}
-                {/* Delete button shown only when not in edit mode */}
-                {editId !== transaction.id && (
-                  <button onClick={() => deleteTransaction(transaction.id)} className="bg-red-500 text-white px-3 py-1 rounded"><FiTrash /></button>
+                  <input type="text" value={editableTransaction.particulars} onChange={(e) => handleChange(e, "particulars")} className="border p-1 rounded" />
+                ) : (
+                  transaction.particulars
                 )}
               </td>
-            </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            )}
+            <td className="p-2 border text-center flex justify-center space-x-2">
+              {editId === transaction.id ? (
+                <>
+                  <button onClick={saveTransaction} className="bg-green-500 text-white px-3 py-1 rounded"><FiSave /></button>
+                  <button onClick={cancelEdit} className="bg-gray-500 text-white px-3 py-1 rounded">Cancel Editing</button>
+                </>
+              ) : null}
+              {editId !== transaction.id && (
+                <button onClick={() => deleteTransaction(transaction.id)} className="bg-red-500 text-white px-3 py-1 rounded"><FiTrash /></button>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
       <ToastContainer />
     </div>
   );
