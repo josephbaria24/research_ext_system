@@ -264,8 +264,8 @@ const TransactionHistory = ({ darkMode }) => {
     //<div className="w-full p-1 min-h-screen rounded transition-colors duration-300 bg-transparent">
 
     <div className={`w-full p-1 min-h-screen rounded transition-colors duration-300 bg-transparent ${darkMode ? "bg-gray-900 text-gray-200" : "bg-gray-100 text-black"}`}>
-      <div className="border-2 border-primary rounded-lg p-4 mb-2">
-      <h2 className="text-3xl font-bold text-center">OUTGOING TRANSACTIONS</h2>
+      <div className="border-2 border-primary rounded-lg p-2 mb-2">
+      <h2 className="text-2xl font-bold text-center">OUTGOING TRANSACTIONS</h2>
     </div>
 
   
@@ -359,13 +359,13 @@ const TransactionHistory = ({ darkMode }) => {
   </div>
 
   {/* Divider */}
-  <div className="w-px bg-gray-300 h-[180px] mx-2"></div> {/* Reduced mx-3 to mx-2 */}
+  <div className="w-px bg-gray-300 h-[122px] mx-2"></div> {/* Reduced mx-3 to mx-2 */}
 
   {/* Right Side: Particulars */}
   <div className="w-full"> {/* Reduced width from w-[200px] to w-[180px] */}
     <label className={`block text-lg font-medium text-gray-700 ${darkMode ? " text-white" : " text-black"}`}>Particulars</label>
     <textarea
-      className={`border p-2 rounded w-full h-[150px] resize-none transition-colors duration-300 outline-none
+      className={`border p-2 rounded w-full h-[94px] resize-none transition-colors duration-300 outline-none
         ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
                   : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
       placeholder="Enter Particulars"
@@ -376,7 +376,7 @@ const TransactionHistory = ({ darkMode }) => {
 </div>
 
   {/* Add Transaction Button */}
-  <div className="flex justify-end mt-6">
+  <div className="flex justify-end mt-0">
     <button 
       className="bg-accent text-white px-4 py-2 rounded flex items-center"
       onClick={addTransaction}
@@ -401,14 +401,14 @@ const TransactionHistory = ({ darkMode }) => {
 
         {/* Search and Sort Controls */}
         <div className="flex justify-between mb-4">
-          <div className="relative w-1/2">
+          <div className="relative w-1/4">
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search..."
-              className={`border p-2 pl-10 rounded w-full transition-colors duration-300 outline-none
+              className={`border p-2 pl-10 rounded w-full transition-colors duration-300 outline-primary
                 ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
-                          : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
+                          : "bg-white text-black border-primary focus:border-orange-500"}`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -425,88 +425,109 @@ const TransactionHistory = ({ darkMode }) => {
 <div className={`p-4 rounded-lg shadow-md transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-300" : "bg-white"}`}>
   <h3 className="text-xl font-semibold mb-2">Transaction List</h3>
 
-  {/* Scrollable Wrapper */}
-  <div className="overflow-y-auto max-h-[400px] border border-gray-300 rounded-md">
-    <table className="w-full border-collapse">
+  <div className="border rounded">
+    {/* Table Header (Fixed) */}
+    <table className="w-full border-collapse table-fixed"> {/* Added table-fixed */}
       <thead>
         <tr className={`transition-colors duration-300 ${darkMode ? "bg-gray-700 text-white" : "bg-accent text-white"}`}>
-          <th className="p-2 border">Date</th>
-          <th className="p-2 border">Time</th>
-          <th className="p-2 border">To</th>
-          <th className="p-2 border" >Control Number</th>
-          <th className="p-2 border">Type</th>
+          <th className="p-2 border w-[8%]">Date</th> {/* Added explicit width */}
+          <th className="p-2 border w-[6%]">Time</th> {/* Added explicit width */}
+          <th className="p-2 border w-[9%]">To</th> {/* Added explicit width */}
+          <th className="p-2 border w-[6%]">Control Number</th> {/* Added explicit width */}
+          <th className="p-2 border w-[6%]">Type</th> {/* Added explicit width */}
           {transactions.some(t => t.type === "letter") && (
-            <th className="p-2 border">Particulars</th>
+            <th className="p-2 border w-[18%]">Particulars</th> 
           )}
-          <th className="p-2 border">Action</th>
+          <th className="p-2 border w-[5%]">Action</th> {/* Added explicit width */}
         </tr>
       </thead>
-      <tbody>
-        {filteredTransactions.map((transaction) => (
-          <tr key={transaction.id} className="border-t" onDoubleClick={() => handleDoubleClick(transaction)}>
-            <td className="p-2 border text-center">
-              {editId === transaction.id ? (
-                <input type="date" value={editableTransaction.date} onChange={(e) => handleChange(e, "date")} className="border p-1 rounded" />
-              ) : (
-                <span className="whitespace-nowrap overflow-hidden text-ellipsis">{transaction.date}</span>
-              )}
-            </td>
-            <td className="p-2 border text-center">
-              {editId === transaction.id ? (
-                <input type="time" value={editableTransaction.time} onChange={(e) => handleChange(e, "time")} className="border p-1 rounded" />
-              ) : (
-                <span className="whitespace-nowrap overflow-hidden text-ellipsis">{formatTimeTo12Hour(transaction.time)}</span>
-              )}
-            </td>
-            <td className="p-2 border text-center">
-              {editId === transaction.id ? (
-                <input type="text" value={editableTransaction.to} onChange={(e) => handleChange(e, "to")} className="border p-1 rounded" />
-              ) : (
-                transaction.to
-              )}
-            </td>
-            <td className="p-2 border text-center">
-              {editId === transaction.id ? (
-                <input type="text" value={editableTransaction.controlNumber} onChange={(e) => handleChange(e, "controlNumber")} className="border p-1 rounded" />
-              ) : (
-                transaction.controlNumber || "N/A"
-              )}
-            </td>
-            <td className="p-2 border text-center" onDoubleClick={() => handleDoubleClick(transaction)}>
-              {editId === transaction.id ? (
-                <select value={editableTransaction.type} onChange={(e) => handleChange(e, "type")} className="border p-2 rounded">
-                  <option value="voucher">Voucher</option>
-                  <option value="payroll">Payroll</option>
-                  <option value="letter">Letter</option>
-                </select>
-              ) : (
-                transaction.type
-              )}
-            </td>
-            {transactions.some(t => t.type === "letter") && (
-              <td className="p-2 border text-center">
+    </table>
+
+    {/* Scrollable Table Body */}
+    <div className="max-h-[400px] overflow-y-auto">
+      <table className="w-full border-collapse table-fixed"> {/* Added table-fixed */}
+        <tbody>
+          {filteredTransactions.map((transaction) => (
+            <tr key={transaction.id} className="border-t" onDoubleClick={() => handleDoubleClick(transaction)}>
+              {/* Date Column */}
+              <td className="p-2 border text-center w-[8%]"> {/* Added explicit width */}
                 {editId === transaction.id ? (
-                  <input type="text" value={editableTransaction.particulars} onChange={(e) => handleChange(e, "particulars")} className="border p-1 rounded" />
+                  <input type="date" value={editableTransaction.date} onChange={(e) => handleChange(e, "date")} className="border p-1 rounded w-full" />
                 ) : (
-                  transaction.particulars
+                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">{transaction.date}</span>
                 )}
               </td>
-            )}
-            <td className="p-2 border text-center flex justify-center space-x-2">
-              {editId === transaction.id ? (
-                <>
-                  <button onClick={saveTransaction} className="bg-green-500 text-white px-3 py-1 rounded"><FiSave /></button>
-                  <button onClick={cancelEdit} className="bg-gray-500 text-white px-3 py-1 rounded">Cancel Editing</button>
-                </>
-              ) : null}
-              {editId !== transaction.id && (
-                <button onClick={() => deleteTransaction(transaction.id)} className="bg-red-500 text-white px-3 py-1 rounded"><FiTrash /></button>
+
+              {/* Time Column */}
+              <td className="p-2 border text-center w-[6%]"> {/* Added explicit width */}
+                {editId === transaction.id ? (
+                  <input type="time" value={editableTransaction.time} onChange={(e) => handleChange(e, "time")} className="border p-1 rounded w-full" />
+                ) : (
+                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">{formatTimeTo12Hour(transaction.time)}</span>
+                )}
+              </td>
+
+              {/* To Column */}
+              <td className="p-2 border text-center w-[9%]"> {/* Added explicit width */}
+                {editId === transaction.id ? (
+                  <input type="text" value={editableTransaction.to} onChange={(e) => handleChange(e, "to")} className="border p-1 rounded w-full" />
+                ) : (
+                  transaction.to
+                )}
+              </td>
+
+              {/* Control Number Column */}
+              <td className="p-2 border text-center w-[6%]"> {/* Added explicit width */}
+                {editId === transaction.id ? (
+                  <input type="text" value={editableTransaction.controlNumber} onChange={(e) => handleChange(e, "controlNumber")} className="border p-1 rounded w-full" />
+                ) : (
+                  transaction.controlNumber || "N/A"
+                )}
+              </td>
+
+              {/* Type Column */}
+              <td className="p-2 border text-center w-[6%]"> {/* Added explicit width */}
+                {editId === transaction.id ? (
+                  <select value={editableTransaction.type} onChange={(e) => handleChange(e, "type")} className="border p-2 rounded w-full">
+                    <option value="voucher">Voucher</option>
+                    <option value="payroll">Payroll</option>
+                    <option value="letter">Letter</option>
+                  </select>
+                ) : (
+                  transaction.type
+                )}
+              </td>
+
+              {/* Particulars Column (Only if needed) */}
+              {transactions.some(t => t.type === "letter") && (
+                <td className="p-2 border text-center w-[18%]"> {/* Added explicit width */}
+                  {editId === transaction.id ? (
+                    <input type="text" value={editableTransaction.particulars} onChange={(e) => handleChange(e, "particulars")} className="border p-1 rounded w-full" />
+                  ) : (
+                    transaction.particulars
+                  )}
+                </td>
               )}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+
+              {/* Action Buttons */}
+              <td className="p-2 border text-center w-[4.45%]"> {/* Added explicit width */}
+                <div className="flex justify-center space-x-2">
+                  {editId === transaction.id ? (
+                    <>
+                      <button onClick={saveTransaction} className="bg-green-500 text-white px-3 py-1 rounded"><FiSave /></button>
+                      <button onClick={cancelEdit} className="bg-gray-500 text-white px-3 py-1 rounded">Cancel Editing</button>
+                    </>
+                  ) : null}
+                  {editId !== transaction.id && (
+                    <button onClick={() => deleteTransaction(transaction.id)} className="bg-red-500 text-white px-3 py-1 rounded"><FiTrash /></button>
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
