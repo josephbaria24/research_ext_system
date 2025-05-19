@@ -435,9 +435,9 @@ const TransactionHistory = ({ darkMode }) => {
           <th className="p-2 border w-[9%]">To</th> {/* Added explicit width */}
           <th className="p-2 border w-[6%]">Control Number</th> {/* Added explicit width */}
           <th className="p-2 border w-[6%]">Type</th> {/* Added explicit width */}
-          {transactions.some(t => t.type === "letter") && (
+
             <th className="p-2 border w-[18%]">Particulars</th> 
-          )}
+
           <th className="p-2 border w-[5%]">Action</th> {/* Added explicit width */}
         </tr>
       </thead>
@@ -498,19 +498,21 @@ const TransactionHistory = ({ darkMode }) => {
                 )}
               </td>
 
-              {/* Particulars Column (Only if needed) */}
-              {transactions.some(t => t.type === "letter") && (
-                <td className="p-2 border text-center w-[18%]"> {/* Added explicit width */}
-                  {editId === transaction.id ? (
-                    <input type="text" value={editableTransaction.particulars} onChange={(e) => handleChange(e, "particulars")} className="border p-1 rounded w-full" />
-                  ) : (
-                    transaction.particulars
-                  )}
-                </td>
-              )}
+              <td className="p-2 border text-center w-[18%]">
+  {editId === transaction.id ? (
+    <input
+      type="text"
+      value={editableTransaction.particulars}
+      onChange={(e) => handleChange(e, "particulars")}
+      className="border p-1 rounded w-full"
+    />
+  ) : (
+    transaction.particulars
+  )}
+</td>
 
               {/* Action Buttons */}
-              <td className="p-2 border text-center w-[4.45%]"> {/* Added explicit width */}
+              <td className="p-2 border text-center w-[5%]"> {/* Added explicit width */}
                 <div className="flex justify-center space-x-2">
                   {editId === transaction.id ? (
                     <>

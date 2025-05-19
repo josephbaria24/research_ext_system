@@ -70,7 +70,7 @@ const LoginPage = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-orange-200 via-white to-peach-100 px-4">
       <div className="bg-white/30 backdrop-blur-md p-8 rounded-xl shadow-xl w-full max-w-md">
-        <h1 className="text-4xl font-bold text-orange-600 text-center mb-4">OVPEC SYSTEM</h1>
+        <h1 className="text-4xl font-bold text-orange-600 text-center mb-4">Research Extension System</h1>
         <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">
           {isSignUp ? "Create an Account" : "Welcome Back"}
         </h2>

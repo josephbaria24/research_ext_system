@@ -7,12 +7,12 @@ import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDwqRbGwO3eSxWaws8-L5oDYVzX5is6shc",
-  authDomain: "vpecsys.firebaseapp.com",
-  projectId: "vpecsys",
-  storageBucket: "vpecsys.firebasestorage.app",
-  messagingSenderId: "997263000162",
-  appId: "1:997263000162:web:99fd12596fca2bd9d8c73b"
+  apiKey: "AIzaSyB2zhuW5Lqt2GGBsyFFQ2KJs47-ToTam9A",
+  authDomain: "researchextsys.firebaseapp.com",
+  projectId: "researchextsys",
+  storageBucket: "researchextsys.firebasestorage.app",
+  messagingSenderId: "169780280320",
+  appId: "1:169780280320:web:2ed7c6913cecac30bf6ce5"
 };
 
 // Initialize Firebase
