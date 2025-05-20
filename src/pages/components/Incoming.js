@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaSearch } from "react-icons/fa";
 import { ToastContainer } from 'react-toastify';
+import { useForm } from 'react-hook-form';
+
 import {
   collection,
   getDocs,
@@ -34,13 +36,17 @@ const TransactionHistory = ({ darkMode }) => {
     controlNumber: "",
     transactionType: "Outgoing",
     type: "",
-    particulars: "" 
+    particulars: "",
+    amount: "" 
   });
 
 
   
   const [type, setType] = useState("");
   const [particulars, setParticulars] = useState("");
+
+  const [selectedType, setSelectedType] = useState("Job Order");
+  const [totalAmount, setTotalAmount] = useState(0);
 
   const transactionsCollectionRef = collection(db, "incomingTransactions");
 
@@ -53,12 +59,31 @@ const TransactionHistory = ({ darkMode }) => {
   setTransactions(sortedTransactions);
 };
 
-  
-  
+ // ✅ Place it here, inside the component
+ const { register, watch, handleSubmit, formState } = useForm();
+
+ const calculateSelect = watch('type');
+ const showAmountFields = calculateSelect === 'Job Request' || calculateSelect === 'Purchase Request';
 
   useEffect(() => {
     fetchTransactions();
   }, []);
+
+
+
+  const calculateTotalAmount = () => {
+    const filtered = filteredTransactions.filter(
+      (t) => t.type && t.type.toLowerCase() === selectedType.toLowerCase()
+    );
+  
+    const total = filtered.reduce((acc, curr) => {
+      const rawAmount = curr.amount?.toString().replace(/,/g, "") || "0";
+      return acc + parseFloat(rawAmount);
+    }, 0);
+  
+    setTotalAmount(total);
+  };
+  
 
 
 
@@ -136,7 +161,7 @@ const TransactionHistory = ({ darkMode }) => {
       });
   
       setNewTransaction({
-        date: "", time: "", items: "", from: "", controlNumber: "", transactionType: "Outgoing", type: "", particulars: ""
+        date: "", time: "", items: "", from: "", controlNumber: "", transactionType: "Outgoing", type: "", particulars: "", amount: ""
       });
       setType(""); 
       setParticulars("");
@@ -164,6 +189,7 @@ const TransactionHistory = ({ darkMode }) => {
       from: newTransaction.from,
       controlNumber: newTransaction.controlNumber,
       transactionType: "Incoming",
+      amount: "",
     });
 
     setNewTransaction({ date: "", time: "", items: "", from: "" });
@@ -251,6 +277,9 @@ const TransactionHistory = ({ darkMode }) => {
     });
   };
 
+
+
+
   
   return (
     <div className="w-full p-1 min-h-screen rounded transition-colors duration-300 bg-transparent">
@@ -258,7 +287,32 @@ const TransactionHistory = ({ darkMode }) => {
 <div className="border-2 border-primary rounded-lg p-2 mb-2">
       <h2 className="text-2xl font-bold text-center">INCOMING TRANSACTIONS</h2>
     </div>
-  
+    
+    <div className="flex items-center space-x-4 mb-4">
+        <select
+          value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value)}
+          className={`border p-2 rounded transition-colors duration-300 outline-none 
+            ${darkMode ? "bg-gray-700 text-white border-gray-500" 
+                      : "bg-white text-black border-gray-300"}`}
+        >
+          
+  <option value="job request">Job Request</option>
+  <option value="purchase request">Purchase Request</option>
+        </select>
+
+        <button
+          onClick={calculateTotalAmount}
+          className={`px-4 py-2 rounded ${darkMode ? "bg-blue-500 text-white" : "bg-orange-500 text-white"}`}
+        >
+          Calculate Total Amount
+        </button>
+
+        <span className="font-semibold">
+          Total: ₱ {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+        </span>
+      </div>
+
 {/* Add/Edit Transaction Form */}
 <div className={`p-4 rounded-lg shadow-md mb-6 transition-colors duration-300 ${darkMode ? "bg-gray-800 text-gray-300" : "bg-white"}`}>
   <h3 className="text-xl font-semibold mb-2">{editId ? "Edit Transaction" : "Add Transaction"}</h3>
@@ -299,11 +353,11 @@ const TransactionHistory = ({ darkMode }) => {
 
     {/* Type and Control Number in the Same Row */}
     <div className="flex space-x-4 mb-4">
-      <div className="max-w-[500px]">
+      <div className="max-w-[300px]">
         <label className={`block text-sm font-medium text-gray-700 ${darkMode ? " text-white" : " text-black"}`}>Control Number</label>
         <input
           type="text"
-          className={`border p-2 rounded transition-colors duration-300 outline-none max-w-[350px] 
+          className={`border p-2 rounded transition-colors duration-300 outline-none max-w-[150px] 
             ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
                       : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
           placeholder="Enter Control Number"
@@ -312,6 +366,8 @@ const TransactionHistory = ({ darkMode }) => {
           onKeyDown={handleKeyDown}
         />
       </div>
+      
+      
       <div className="max-w-[400px]">
         <label className={`block text-sm font-medium text-gray-700 ${darkMode ? " text-white" : " text-black"}`}>Type</label>
         <select
@@ -325,13 +381,38 @@ const TransactionHistory = ({ darkMode }) => {
           <option value="voucher">Voucher</option>
           <option value="payroll">Payroll</option>
           <option value="letter">Letter</option>
+          <option value="job request">Job request</option>
+          <option value="purchase request">Purchase request</option>
         </select>
+      </div>
+      <div className="max-w-[500px]">
+        <label className={`block text-sm font-medium text-gray-700 ${darkMode ? " text-white" : " text-black"}`}>Amount</label>
+        <input
+            type="text"
+            className={`border p-2 rounded transition-colors duration-300 outline-none max-w-[130px] 
+              ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
+                        : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
+            placeholder="Enter amount"
+            value={newTransaction.amount}
+            onChange={(e) => {
+              const rawValue = e.target.value.replace(/,/g, ''); // remove commas first
+              const numericValue = rawValue.replace(/\D/g, ''); // remove non-digit chars
+
+              // Format with commas
+              const formatted = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+              setNewTransaction({ ...newTransaction, amount: formatted });
+            }}
+            onKeyDown={handleKeyDown}
+          />
+
+
       </div>
       <div className="w-full">
         <label className={`block text-sm font-medium text-gray-700 ${darkMode ? " text-white" : " text-black"}`}>Incoming From</label>
         <input 
           type="text" 
-          className={`border p-2 rounded w-[243px] transition-colors duration-300 outline-none
+          className={`border p-2 rounded w-[200px] transition-colors duration-300 outline-none
             ${darkMode ? "bg-gray-700 text-white border-gray-500 focus:border-blue-400" 
                       : "bg-white text-black border-gray-300 focus:border-orange-500"}`}
           placeholder="From" 
@@ -421,13 +502,14 @@ const TransactionHistory = ({ darkMode }) => {
     <table className="w-full border-collapse table-fixed"> {/* Added table-fixed */}
       <thead>
         <tr className={`transition-colors duration-300 ${darkMode ? "bg-gray-700 text-white" : "bg-accent text-white"}`}>
-          <th className="p-2 border w-[8%]">Date</th> {/* Added explicit width */}
+          <th className="p-2 border w-[5%]">Date</th> {/* Added explicit width */}
           <th className="p-2 border w-[6%]">Time</th> {/* Added explicit width */}
           <th className="p-2 border w-[9%]">From</th> {/* Added explicit width */}
           <th className="p-2 border w-[6%]">Control Number</th> {/* Added explicit width */}
           <th className="p-2 border w-[6%]">Type</th> {/* Added explicit width */}
           
             <th className="p-2 border w-[18%]">Particulars</th>
+            <th className="p-2 border w-[8%]">Amount</th>
       
           <th className="p-2 border w-[5%]">Action</th> {/* Added explicit width */}
         </tr>
@@ -442,7 +524,7 @@ const TransactionHistory = ({ darkMode }) => {
             <tr key={transaction.id} className="border-t hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300" onDoubleClick={() => handleDoubleClick(transaction)}>
               
               {/* Date Column */}
-              <td className="p-2 border text-center w-[8%]"> {/* Added explicit width */}
+              <td className="p-2 border text-center w-[5%]"> {/* Added explicit width */}
                 {editId === transaction.id ? (
                   <input type="date" value={editableTransaction.date} onChange={(e) => handleChange(e, "date")} className="border p-1 rounded w-full" />
                 ) : (
@@ -488,6 +570,8 @@ const TransactionHistory = ({ darkMode }) => {
                     <option value="voucher">Voucher</option>
                     <option value="payroll">Payroll</option>
                     <option value="letter">Letter</option>
+                    <option value="job request">Job request</option>
+                    <option value="purchase request">Purchase request</option>
                   </select>
                 ) : (
                   transaction.type
@@ -506,6 +590,22 @@ const TransactionHistory = ({ darkMode }) => {
                     />
                   ) : (
                     transaction.particulars || "N/A"
+                  )}
+                </td>
+
+                <td className="p-2 border text-center w-[8%]"> {/* Added explicit width */}
+                  {editId === transaction.id ? (
+                    <input
+                      type="text"
+                      value={editableTransaction.amount}
+                      onChange={(e) => handleChange(e, "amount")}
+                      className="border p-1 rounded w-full"
+                    />
+                  ) : (
+                    transaction.amount
+                    ? Number(transaction.amount.toString().replace(/,/g, "")).toLocaleString()
+                    : "N/A"
+                  
                   )}
                 </td>
 
